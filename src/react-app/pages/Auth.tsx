@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Mail, Lock, User, ArrowLeft } from 'lucide-react';
+import { loginUser, signupUser } from '../api/authApi';
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
@@ -9,16 +10,41 @@ export default function Auth() {
   const [name, setName] = useState('');
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement actual authentication
-    navigate('/profile');
+
+    try {
+      if (isLogin) {
+        const res = await loginUser(email, password);
+
+        if (res.token) {
+          localStorage.setItem('token', res.token);
+          localStorage.setItem('user', JSON.stringify(res.user));
+          alert('Login successful');
+          navigate('/profile');
+        } else {
+          alert(res.message || 'Login failed');
+        }
+      } else {
+        const res = await signupUser(name, email, password);
+        alert(res.message);
+
+        if (res.message === 'Signup successful') {
+          setIsLogin(true);
+          setName('');
+          setEmail('');
+          setPassword('');
+        }
+      }
+    } catch (error) {
+      console.log(error);
+      alert('Something went wrong');
+    }
   };
 
   return (
     <div className="flex-1 overflow-auto flex items-center justify-center p-8">
       <div className="w-full max-w-md">
-        {/* Back Button */}
         <button
           onClick={() => navigate(-1)}
           className="flex items-center gap-2 text-gray-600 hover:text-gray-800 mb-8 transition-colors"
@@ -27,7 +53,6 @@ export default function Auth() {
           <span>Back</span>
         </button>
 
-        {/* Auth Card */}
         <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 border border-purple-200/50 shadow-lg">
           <div className="text-center mb-8">
             <div className="w-16 h-16 bg-gradient-to-br from-purple-300 to-pink-300 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -37,8 +62,8 @@ export default function Auth() {
               {isLogin ? 'Welcome Back!' : 'Join Healthi AI'}
             </h1>
             <p className="text-gray-600">
-              {isLogin 
-                ? 'Sign in to continue your wellness journey' 
+              {isLogin
+                ? 'Sign in to continue your wellness journey'
                 : 'Start your mental wellness journey today'}
             </p>
           </div>
@@ -118,7 +143,7 @@ export default function Auth() {
 
           <div className="mt-6 text-center">
             <p className="text-gray-600 text-sm">
-              {isLogin ? "Don't have an account? " : "Already have an account? "}
+              {isLogin ? "Don't have an account? " : 'Already have an account? '}
               <button
                 onClick={() => setIsLogin(!isLogin)}
                 className="text-purple-600 hover:text-purple-700 font-semibold"
@@ -131,4 +156,4 @@ export default function Auth() {
       </div>
     </div>
   );
-}
+} 
