@@ -1,32 +1,35 @@
 import { useEffect, useState } from 'react';
 import { Clock } from 'lucide-react';
 import Header from '@/react-app/components/Header';
-import { sendMessage, getSymptomHistory } from '../api/chatApi';
+import { checkSymptoms, getSymptomHistory } from '@/react-app/api/symptomApi';
 
 interface SymptomCheckerProps {
   onNotificationClick: () => void;
 }
 
-interface HistoryItem {
-  _id: string;
-  email: string;
+interface SymptomItem {
+  _id?: string;
   symptoms: string;
-  reply: string;
-  createdAt: string;
+  result: string;
+  createdAt?: string;
 }
 
 export default function SymptomChecker({ onNotificationClick }: SymptomCheckerProps) {
   const [symptoms, setSymptoms] = useState('');
   const [results, setResults] = useState('');
   const [loading, setLoading] = useState(false);
-  const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [history, setHistory] = useState<SymptomItem[]>([]);
+
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
 
   const loadHistory = async () => {
+    if (!user?.email) return;
+
     try {
-      const data = await getSymptomHistory();
+      const data = await getSymptomHistory(user.email);
       setHistory(data);
     } catch (error) {
-      console.log("History fetch error:", error);
+      console.log(error);
     }
   };
 
@@ -35,21 +38,20 @@ export default function SymptomChecker({ onNotificationClick }: SymptomCheckerPr
   }, []);
 
   const handleAnalyze = async () => {
-    if (!symptoms) return;
+    if (!symptoms.trim()) return;
 
     setLoading(true);
 
     try {
-      const reply = await sendMessage(symptoms);
-      setResults(reply);
-      setSymptoms('');
+      const data = await checkSymptoms(symptoms, user.email);
+      setResults(data.result || 'No result found');
       await loadHistory();
     } catch (error) {
       console.log(error);
-      setResults("Something went wrong. Please try again.");
+      setResults('Something went wrong');
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   const handleClear = () => {
@@ -69,11 +71,7 @@ export default function SymptomChecker({ onNotificationClick }: SymptomCheckerPr
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-          {/* Left side */}
           <div className="lg:col-span-2 space-y-6">
-
-            {/* Input section */}
             <div className="bg-white/70 backdrop-blur-sm rounded-3xl p-8 border border-[#DCD2FD]/30 shadow-sm">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">
                 Describe your symptoms
@@ -82,7 +80,7 @@ export default function SymptomChecker({ onNotificationClick }: SymptomCheckerPr
               <textarea
                 value={symptoms}
                 onChange={(e) => setSymptoms(e.target.value)}
-                placeholder="E.g, headache, fever, sore throat, fatigue..."
+                placeholder="E.g, headache, fever, sore throat.. fatigue..."
                 className="w-full px-6 py-4 rounded-2xl bg-white/80 border border-[#DCD2FD]/40 focus:outline-none focus:ring-2 focus:ring-[#B9A9FB]/50 text-gray-700 placeholder-gray-400 resize-none h-24 mb-6"
               />
 
@@ -91,7 +89,7 @@ export default function SymptomChecker({ onNotificationClick }: SymptomCheckerPr
                   onClick={handleAnalyze}
                   className="px-8 py-3 bg-[#B9A9FB] hover:bg-[#DCD2FD] text-white rounded-xl font-semibold transition-colors"
                 >
-                  Analyze Symptoms
+                  {loading ? 'Analyzing...' : 'Analyze Symptoms'}
                 </button>
 
                 <button
@@ -104,13 +102,12 @@ export default function SymptomChecker({ onNotificationClick }: SymptomCheckerPr
               </div>
             </div>
 
-            {/* AI result */}
             <div className="bg-white/70 backdrop-blur-sm rounded-3xl p-8 border border-[#DCD2FD]/30 shadow-sm">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">
                 Possible Conditions & Insights
               </h2>
 
-              <div className="min-h-[220px] border-2 border-dashed border-[#DCD2FD]/40 rounded-2xl p-6 bg-white/40">
+              <div className="min-h-[300px] border-2 border-dashed border-[#DCD2FD]/40 rounded-2xl p-6 bg-white/40">
                 {loading && (
                   <p className="text-gray-600">Analyzing symptoms...</p>
                 )}
@@ -120,56 +117,36 @@ export default function SymptomChecker({ onNotificationClick }: SymptomCheckerPr
                     {results}
                   </p>
                 )}
-
-                {!loading && !results && (
-                  <p className="text-gray-400">
-                    Your AI response will appear here.
-                  </p>
-                )}
               </div>
             </div>
 
-            {/* History */}
             <div className="bg-white/70 backdrop-blur-sm rounded-3xl p-8 border border-[#DCD2FD]/30 shadow-sm">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">
                 Your Symptom History
               </h2>
 
-              <div className="space-y-4">
+              <div className="space-y-4 max-h-72 overflow-y-auto">
                 {history.length === 0 ? (
-                  <p className="text-gray-500">No symptom history yet.</p>
+                  <p className="text-gray-500">No history yet</p>
                 ) : (
-                  history.map((item) => (
+                  history.map((item, index) => (
                     <div
-                      key={item._id}
-                      className="bg-white/80 rounded-2xl p-5 border border-[#DCD2FD]/30"
+                      key={item._id || index}
+                      className="bg-white/80 rounded-2xl p-4 border border-[#DCD2FD]/30"
                     >
                       <p className="text-sm text-gray-500 mb-2">
-                        {new Date(item.createdAt).toLocaleString()}
+                        <strong>Symptoms:</strong> {item.symptoms}
                       </p>
-
-                      <p className="text-gray-800 font-semibold mb-2">
-                        Symptoms:
-                      </p>
-                      <p className="text-gray-700 mb-4">
-                        {item.symptoms}
-                      </p>
-
-                      <p className="text-gray-800 font-semibold mb-2">
-                        AI Reply:
-                      </p>
-                      <p className="text-gray-700 whitespace-pre-line">
-                        {item.reply}
+                      <p className="text-sm text-gray-700 whitespace-pre-wrap">
+                        <strong>AI Result:</strong> {item.result}
                       </p>
                     </div>
                   ))
                 )}
               </div>
             </div>
-
           </div>
 
-          {/* Right side */}
           <div>
             <div className="bg-white/70 backdrop-blur-sm rounded-3xl p-6 border border-[#DCD2FD]/30 shadow-sm">
               <div className="flex justify-center mb-6">
@@ -196,14 +173,14 @@ export default function SymptomChecker({ onNotificationClick }: SymptomCheckerPr
                     Tip
                   </p>
                   <p className="text-gray-600 text-sm">
-                    Each logged-in user now has their own saved symptom history.
+                    Describe symptoms clearly for better AI suggestions.
                   </p>
                 </div>
               </div>
             </div>
           </div>
-
         </div>
+
       </div>
     </div>
   );

@@ -1,0 +1,11 @@
+#Node
+node_modules/
+
+# Environment variables
+.env
+frontend/.env
+backend/.env
+
+# Build outputs
+dist/
+.DS_Store
