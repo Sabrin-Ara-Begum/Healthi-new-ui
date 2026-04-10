@@ -1,7 +1,7 @@
 {
   "name": "healthi-backend",
   "version": "1.0.0",
-  "type": "module",
+  "description": "Backend for Healthi App",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
