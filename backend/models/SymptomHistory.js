@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+const mongoose = require("mongoose");
 
 const symptomHistorySchema = new mongoose.Schema(
   {
@@ -18,6 +18,4 @@ const symptomHistorySchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-const SymptomHistory = mongoose.model("SymptomHistory", symptomHistorySchema);
-
-export default SymptomHistory;
+module.exports = mongoose.model("SymptomHistory", symptomHistorySchema);
