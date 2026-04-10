@@ -1,4 +1,4 @@
-const API_BASE_URL = "https://healthi-ai-bppm.onrender.com";
+const API_BASE_URL = "https://healthi-ai-bppm.onrender.com/api";
 
 export const checkSymptoms = async (symptoms: string, userEmail: string) => {
   const res = await fetch(`${API_BASE_URL}/check`, {

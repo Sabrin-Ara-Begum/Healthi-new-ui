@@ -1,7 +1,7 @@
 export const sendMessage = async (message: string) => {
   const user = JSON.parse(localStorage.getItem("user") || "{}");
 
-  const res = await fetch("https://healthi-ai-bppm.onrender.com", {
+  const res = await fetch("https://healthi-ai-bppm.onrender.com/api/openrouter/chat", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
