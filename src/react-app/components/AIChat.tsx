@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { sendMessage } from "../../api/chatApi"
+import { sendMessage } from "../api/chatApi"
 
 export default function AIChat() {
 
