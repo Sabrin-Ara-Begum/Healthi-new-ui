@@ -1,6 +1,6 @@
 export const signupUser = async (name: string, email: string, password: string) => {
 
-  const res = await fetch("http://localhost:5001/api/auth/signup", {
+  const res = await fetch("https://healthi-ai-bppm.onrender.com", {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
@@ -18,7 +18,7 @@ export const signupUser = async (name: string, email: string, password: string) 
 
 export const loginUser = async (email: string, password: string) => {
 
-  const res = await fetch("http://localhost:5001/api/auth/login", {
+  const res = await fetch("https://healthi-ai-bppm.onrender.com", {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
