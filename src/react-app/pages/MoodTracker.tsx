@@ -20,7 +20,7 @@ const moodEmojis = [
 const initialWeeklyData = [
   { day: "Mon", emoji: "😰", height: "h-32", color: "bg-[#FFB3C1]" },
   { day: "Tue", emoji: "😟", height: "h-40", color: "bg-[#B3D9FF]" },
-  { day: "Wed", emoji: "😐", height: "h-36", color: "bg-[#D4F1E8]" },
+  { day: "Wed", emoji: "😐", height: "h-38", color: "bg-[#D4F1E8]" },
   { day: "Thu", emoji: "😊", height: "h-44", color: "bg-[#C1E8C8]" },
   { day: "Fri", emoji: "😌", height: "h-40", color: "bg-[#FFE5E5]" },
   { day: "Sat", emoji: "🙂", height: "h-36", color: "bg-[#E8F0FE]" },
@@ -241,13 +241,13 @@ export default function MoodTracker({ onNotificationClick }: MoodTrackerProps) {
 
             <div className="flex gap-3 mt-6">
 
-              <input
-                value={moodNote}
-                onChange={(e)=>setMoodNote(e.target.value)}
-                onKeyDown={(e)=>{ if(e.key==="Enter") handleSaveNote(); }}
-                placeholder="Add details (optional)"
-                className="flex-1 px-4 py-3 rounded-xl border border-purple-200"
-              />
+              <textarea
+  value={moodNote}
+  onChange={(e) => setMoodNote(e.target.value)}
+  placeholder="Add details (optional)"
+  rows={3}
+  className="flex-1 px-4 py-3 rounded-xl border border-purple-200 resize-none overflow-hidden"
+/>
 
               <button
                 onClick={handleSaveNote}
@@ -268,13 +268,22 @@ export default function MoodTracker({ onNotificationClick }: MoodTrackerProps) {
 
             <div ref={notesRef} className="space-y-3 h-48 overflow-y-auto">
 
-              {notes.map((n,i)=>(
-                <div key={i} className={`${n.color} p-4 rounded-xl shadow-sm`}>
-                  <div className="text-xl">{n.mood}</div>
-                  <p className="text-sm">{n.note}</p>
-                  <span className="text-xs text-gray-500">{n.day}</span>
-                </div>
-              ))}
+              {notes.map((n, i) => (
+  <div
+    key={i}
+    className={`${n.color} p-4 rounded-xl shadow-sm min-h-[120px] h-auto flex flex-col`}
+  >
+    <div className="text-xl mb-2">{n.mood}</div>
+
+    <p className="text-sm whitespace-pre-wrap break-words flex-1">
+      {n.note}
+    </p>
+
+    <span className="text-xs text-gray-500 mt-3">
+      {n.day}
+    </span>
+  </div>
+))}
 
             </div>
 
