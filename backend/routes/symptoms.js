@@ -61,12 +61,30 @@ For each condition include:
 
 ## 3. 👨‍⚕️ Consultation & Specialty
 
-Recommend:
-- Which doctor should be consulted
-- How urgently the appointment should be scheduled
+Recommended Specialist:
+Write ONLY ONE specialty.
 
-Also provide four useful questions the patient should ask the doctor.
+Examples:
+- General Physician
+- Dermatologist
+- Neurologist
+- Cardiologist
+- ENT Specialist
+- Orthopedic Surgeon
+- Gynecologist
+- Pediatrician
+- Gastroenterologist
 
+Confidence:
+Give an integer between 0 and 100.
+
+Reason:
+Explain in 2-3 short sentences why this specialist is recommended.
+
+Appointment:
+How soon should the patient book?
+
+Also provide exactly four useful questions the patient should ask the doctor.
 ---
 
 ## 4. 🏠 First Aid & Home Care

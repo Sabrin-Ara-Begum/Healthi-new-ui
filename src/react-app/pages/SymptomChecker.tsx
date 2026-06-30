@@ -45,6 +45,15 @@ export default function SymptomChecker({ onNotificationClick }: SymptomCheckerPr
     try {
       const data = await checkSymptoms(symptoms, user.email);
       setResults(data.result || 'No result found');
+      localStorage.setItem(
+  "aiRecommendation",
+  JSON.stringify({
+    specialist: "General",
+    confidence: 92,
+    reason:
+      "Your symptoms suggest starting with a General Physician for an initial evaluation."
+  })
+);
       await loadHistory();
     } catch (error) {
       console.log(error);
