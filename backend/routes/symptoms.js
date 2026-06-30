@@ -28,7 +28,81 @@ router.post("/check", async (req, res) => {
       messages: [
         {
           role: "user",
-          content: `Given symptoms: ${symptoms}, list possible diseases stepwise and suggest doctor types in structured JSON format.`,
+          content: `
+You are an experienced AI Health Assistant.
+
+The user reports the following symptoms:
+
+${symptoms}
+
+Analyze these symptoms carefully and respond in the following format.
+
+# 🩺 Symptom Assessment
+
+## 1. 🚨 Urgency & Action Plan
+
+- **Recommended Action:** (Seek Emergency Care / Schedule a Doctor's Visit / Monitor at Home)
+- **Reason:** Explain why.
+- **Red Flags:** List symptoms that require immediate emergency care.
+
+---
+
+## 2. 🔍 Potential Causes
+
+List the possible conditions from most likely to least likely.
+
+For each condition include:
+- Condition name
+- Probability (High / Medium / Low)
+- Why these symptoms match
+- Other symptoms commonly seen
+
+---
+
+## 3. 👨‍⚕️ Consultation & Specialty
+
+Recommend:
+- Which doctor should be consulted
+- How urgently the appointment should be scheduled
+
+Also provide four useful questions the patient should ask the doctor.
+
+---
+
+## 4. 🏠 First Aid & Home Care
+
+Provide:
+- Immediate first-aid
+- Safe home remedies
+- Hydration advice
+- Diet recommendations
+- Rest recommendations
+
+---
+
+## 5. ⚠️ Things to Avoid
+
+Mention:
+- Activities to avoid
+- Medicines to avoid unless prescribed
+- Common mistakes patients make
+
+---
+
+## 6. 📅 Seek Immediate Medical Help If
+
+Provide a checklist of emergency warning signs.
+
+---
+
+## 7. ⚕️ Disclaimer
+
+State that this is an AI-generated assessment and not a medical diagnosis.
+
+Use Markdown headings, bullet points, and short paragraphs.
+
+Do NOT return JSON.
+`,
         },
       ],
       max_tokens: 500,
