@@ -26,112 +26,140 @@ router.post("/check", async (req, res) => {
     const completion = await client.chat.completions.create({
       model: "openai/gpt-3.5-turbo", // use an available model (OpenRouter supports many)
       messages: [
-        {
-          role: "user",
-          content: `
-You are an experienced AI Health Assistant.
+  {
+    role: "system",
+    content: `
+You are Healthi AI.
 
-The user reports the following symptoms:
+Return ONLY valid JSON.
+
+Never return markdown.
+
+Never return explanations outside JSON.
+
+Return exactly this structure:
+
+{
+  "urgency":{
+    "title":"",
+    "points":[]
+  },
+  "causes":{
+    "title":"",
+    "points":[]
+  },
+  "homeCare":{
+    "title":"",
+    "points":[]
+  },
+  "avoid":{
+    "title":"",
+    "points":[]
+  },
+  "emergency":{
+    "title":"",
+    "points":[]
+  },
+  "specialist":{
+    "name":"",
+    "reason":""
+  }
+}
+`
+  },
+  {
+    role: "user",
+    content: `
+Patient Symptoms:
 
 ${symptoms}
 
-Analyze these symptoms carefully and respond in the following format.
+Analyze carefully.
 
-# 🩺 Symptom Assessment
+Return ONLY valid JSON.
 
-## 1. 🚨 Urgency & Action Plan
+{
+  "urgency":{
+    "title":"Urgency & Action Plan",
+    "points":[
+      "",
+      "",
+      ""
+    ]
+  },
 
-- **Recommended Action:** (Seek Emergency Care / Schedule a Doctor's Visit / Monitor at Home)
-- **Reason:** Explain why.
-- **Red Flags:** List symptoms that require immediate emergency care.
+  "causes":{
+    "title":"Possible Causes",
+    "points":[
+      "",
+      "",
+      ""
+    ]
+  },
 
----
+  "why":{
+    "title":"Why these symptoms match",
+    "points":[
+      "",
+      "",
+      ""
+    ]
+  },
 
-## 2. 🔍 Potential Causes
+  "homeCare":{
+    "title":"Home Care",
+    "points":[
+      "",
+      "",
+      ""
+    ]
+  },
 
-List the possible conditions from most likely to least likely.
+  "avoid":{
+    "title":"Things to Avoid",
+    "points":[
+      "",
+      "",
+      ""
+    ]
+  },
 
-For each condition include:
-- Condition name
-- Probability (High / Medium / Low)
-- Why these symptoms match
-- Other symptoms commonly seen
+  "emergency":{
+    "title":"Emergency Warning Signs",
+    "points":[
+      "",
+      "",
+      ""
+    ]
+  },
 
----
+  "specialist":{
+    "name":"",
+    "reason":""
+  }
+}
 
-## 3. 👨‍⚕️ Consultation & Specialty
+Rules:
 
-Recommended Specialist:
-Write ONLY ONE specialty.
-
-Examples:
-- General Physician
-- Dermatologist
-- Neurologist
-- Cardiologist
-- ENT Specialist
-- Orthopedic Surgeon
-- Gynecologist
-- Pediatrician
-- Gastroenterologist
-
-Confidence:
-Give an integer between 0 and 100.
-
-Reason:
-Explain in 2-3 short sentences why this specialist is recommended.
-
-Appointment:
-How soon should the patient book?
-
-Also provide exactly four useful questions the patient should ask the doctor.
----
-
-## 4. 🏠 First Aid & Home Care
-
-Provide:
-- Immediate first-aid
-- Safe home remedies
-- Hydration advice
-- Diet recommendations
-- Rest recommendations
-
----
-
-## 5. ⚠️ Things to Avoid
-
-Mention:
-- Activities to avoid
-- Medicines to avoid unless prescribed
-- Common mistakes patients make
-
----
-
-## 6. 📅 Seek Immediate Medical Help If
-
-Provide a checklist of emergency warning signs.
-
----
-
-## 7. ⚕️ Disclaimer
-
-State that this is an AI-generated assessment and not a medical diagnosis.
-
-Use Markdown headings, bullet points, and short paragraphs.
-
-Do NOT return JSON.
-`,
-        },
-      ],
+- Always fill EVERY section.
+- Never leave a section empty.
+- Maximum 3 bullet points each.
+- Bullet points should be short.
+- Recommend only ONE specialist.
+- Never return markdown.
+- Never return explanations outside JSON.
+`
+    
+  }
+],
       max_tokens: 500,
     });
 
-    const result = completion.choices[0].message.content;
+    const result = JSON.parse(
+  completion.choices[0].message.content
+);
 
-    res.json({
-      message: "Success",
-      result,
-    });
+return res.json(result);
   } catch (err) {
     console.error(err.response ? err.response.data : err.message);
     res.status(500).json({

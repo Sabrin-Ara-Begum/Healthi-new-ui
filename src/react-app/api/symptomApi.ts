@@ -13,6 +13,7 @@ export const checkSymptoms = async (symptoms: string, userEmail: string) => {
   });
 
   const data = await res.json();
+  console.log("API RAW:", JSON.stringify(data, null, 2));
   return data;
 };
 

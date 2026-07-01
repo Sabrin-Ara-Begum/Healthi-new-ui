@@ -16,7 +16,7 @@ interface SymptomItem {
 
 export default function SymptomChecker({ onNotificationClick }: SymptomCheckerProps) {
   const [symptoms, setSymptoms] = useState('');
-  const [results, setResults] = useState('');
+  const [results, setResults] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [history, setHistory] = useState<SymptomItem[]>([]);
 
@@ -44,16 +44,17 @@ export default function SymptomChecker({ onNotificationClick }: SymptomCheckerPr
 
     try {
       const data = await checkSymptoms(symptoms, user.email);
-      setResults(data.result || 'No result found');
+      console.log("DATA FROM BACKEND:", data);
+      setResults(data);
       localStorage.setItem(
-  "aiRecommendation",
-  JSON.stringify({
-    specialist: "General",
-    confidence: 92,
-    reason:
-      "Your symptoms suggest starting with a General Physician for an initial evaluation."
-  })
-);
+      "aiRecommendation",
+      JSON.stringify({
+        specialist: "General",
+        confidence: 92,
+        reason:
+          "Your symptoms suggest starting with a General Physician for an initial evaluation."
+      })
+    );
       await loadHistory();
     } catch (error) {
       console.log(error);
@@ -116,17 +117,222 @@ export default function SymptomChecker({ onNotificationClick }: SymptomCheckerPr
                 Possible Conditions & Insights
               </h2>
 
-              <div className="min-h-[300px] border-2 border-dashed border-[#DCD2FD]/40 rounded-2xl p-6 bg-white/40">
-                {loading && (
-                  <p className="text-gray-600">Analyzing symptoms...</p>
-                )}
+              <div className="space-y-5">
 
-                {!loading && results && (
-                  <p className="text-gray-700 whitespace-pre-line">
-                    {results}
-                  </p>
-                )}
-              </div>
+  {loading && (
+    <div className="bg-white rounded-2xl p-8 shadow-sm">
+      <div className="flex flex-col items-center py-12">
+
+<div className="w-12 h-12 border-4 border-[#E7D8FF] border-t-[#B89AF8] rounded-full animate-spin"></div>
+
+<p className="mt-5 text-gray-600 font-medium">
+
+Our AI is analyzing your symptoms...
+
+</p>
+
+<p className="text-sm text-gray-400 mt-2">
+
+This usually takes 2–5 seconds.
+
+</p>
+
+</div>
+    </div>
+  )}
+
+  {!loading &&
+results && (
+
+    <>
+      {/* Urgency */}
+
+      <div className="bg-[#FFF8FC] rounded-3xl shadow-sm border border-[#F2DDF2] overflow-hidden">
+
+        <div className="bg-[#9C82D2] text-white px-6 py-4 font-bold text-lg">
+          🩺 Urgency & Action Plan
+        </div>
+
+        <div className="p-6">
+
+          <ul className="space-y-3 text-gray-700 leading-7">
+
+            {results.urgency.points.map((item: string, index: number) => (
+              <li key={index}>{item}</li>
+            ))}
+
+          </ul>
+
+        </div>
+
+      </div>
+
+      {/* Causes */}
+
+      <div className="bg-white rounded-3xl shadow-md overflow-hidden">
+
+        <div className="bg-[#8C72CA] text-white px-6 py-4 font-bold text-lg">
+          🔍 Possible Causes
+        </div>
+
+        <div className="p-6">
+
+          <ul className="list-disc pl-6 space-y-2 text-gray-700">
+
+            {results.causes.points.map((item: string, index: number) => (
+              <li key={index}>{item}</li>
+            ))}
+
+          </ul>
+
+        </div>
+
+      </div>
+            {/* Why these symptoms match */}
+
+<div className="bg-[#FFF8FC] rounded-3xl shadow-sm border border-[#F2DDF2] overflow-hidden">
+
+  <div className="bg-[#8C72CA] text-white px-6 py-4 font-bold text-lg">
+    🧬 Why these symptoms match
+  </div>
+
+  <div className="p-6">
+
+    <ul className="space-y-3 text-gray-700 leading-7">
+
+      {results.causes.points.map((item: string, index: number) => (
+        <li key={index}>
+          {item}
+        </li>
+      ))}
+
+    </ul>
+
+  </div>
+
+</div>
+
+
+      {/* Home Care */}
+
+      <div className="bg-[#FFF8FC] rounded-3xl shadow-sm border border-[#F2DDF2] overflow-hidden">
+
+        <div className="bg-[#9C82D2] text-white px-6 py-4 font-bold text-lg">
+          🏠 Home Care
+        </div>
+
+        <div className="p-6">
+
+          <ul className="space-y-3 text-gray-700 leading-7">
+
+            {results.homeCare.points.map((item: string, index: number) => (
+              <li key={index}>{item}</li>
+            ))}
+
+          </ul>
+
+        </div>
+
+      </div>
+
+      {/* Avoid */}
+
+      <div className="bg-[#FFF8FC] rounded-3xl shadow-sm border border-[#F2DDF2] overflow-hidden">
+
+        <div className="bg-[#9C82D2] text-white px-6 py-4 font-bold text-lg">
+          ⚠️ Things to Avoid
+        </div>
+
+        <div className="p-6">
+
+          <ul className="space-y-3 text-gray-700 leading-7">
+
+            {results.avoid.points.map((item: string, index: number) => (
+              <li key={index}>{item}</li>
+            ))}
+
+          </ul>
+
+        </div>
+
+      </div>
+
+      {/* Emergency */}
+
+      <div className="bg-[#FFF8FC] rounded-3xl shadow-sm border border-[#F2DDF2] overflow-hidden">
+
+        <div className="bg-[#9C82D2] text-white px-6 py-4 font-bold text-lg">
+          🚨 Seek Immediate Medical Help If
+        </div>
+
+        <div className="p-6">
+
+          <ul className="space-y-3 text-gray-700 leading-7">
+
+            {results.emergency.points.map((item: string, index: number) => (
+             <div
+  key={index}
+  className="flex items-start gap-3"
+>
+  <span className="text-[#B89AF8] mt-1 text-lg">
+    •
+  </span>
+
+  <span>{item}</span>
+</div>
+            ))}
+
+          </ul>
+
+        </div>
+
+      </div>
+
+      {/* Specialist */}
+
+      <div className="bg-[#FFF8FC] rounded-3xl shadow-sm border border-[#F2DDF2] overflow-hidden">
+
+        <div className="bg-[#9C82D2] text-white px-6 py-4 font-bold text-lg">
+          👨‍⚕️ Specialist to Consult
+        </div>
+
+        <div className="p-6 flex justify-between items-center">
+
+          <div>
+
+            <h3 className="text-3xl font-bold text-[#6F52B5]">
+              {results.specialist.name}
+            </h3>
+
+            <p className="text-gray-600 mt-3 leading-7 max-w-xl">
+              {results.specialist.reason}
+            </p>
+
+          </div>
+
+          <button
+            className="bg-[#b89af8] hover:bg-[#a986f2] text-white px-6 py-3 rounded-xl font-semibold"
+            onClick={() => {
+              localStorage.setItem(
+                "recommendedSpecialist",
+                results.specialist.name
+              );
+
+              window.location.href = "/find-doctor";
+            }}
+          >
+            Find Nearby Doctors
+          </button>
+
+        </div>
+
+      </div>
+
+    </>
+
+  )}
+
+</div>
             </div>
 
             <div className="bg-white/70 backdrop-blur-sm rounded-3xl p-8 border border-[#DCD2FD]/30 shadow-sm">
