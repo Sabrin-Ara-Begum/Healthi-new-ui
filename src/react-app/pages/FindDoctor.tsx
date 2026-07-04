@@ -55,12 +55,46 @@ setSearch(specialist);
 localStorage.removeItem("recommendedSpecialist");
 }
 }, []);
+useEffect(() => {
+  if (!navigator.geolocation) return;
+
+  navigator.geolocation.getCurrentPosition(
+    async (position) => {
+      const { latitude, longitude } = position.coords;
+
+      try {
+        const response = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
+        );
+
+        const data = await response.json();
+
+        const city =
+          data.address.city ||
+          data.address.town ||
+          data.address.village ||
+          "Sivasagar";
+
+        setUserLocation(city);
+      } catch {
+        setUserLocation("Sivasagar");
+      }
+    },
+    () => {
+      setUserLocation("Sivasagar");
+    }
+  );
+}, []);
 
 const fetchDoctors = async () => {
   if (!search.trim()) return;
 
   try {
     setLoading(true);
+    console.log("Searching:", {
+      specialty: search,
+      location: userLocation,
+    });
 
     const response = await fetch("http://localhost:5001/api/doctors/find", {
       method: "POST",
@@ -68,9 +102,9 @@ const fetchDoctors = async () => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        specialty: search,
-        location: "Sivasagar",
-      }),
+  specialty: search,
+  location: userLocation,
+}),
     });
 
     const data = await response.json();
@@ -88,6 +122,7 @@ const fetchDoctors = async () => {
   const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(null);
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [loading, setLoading] = useState(false);
+  const [userLocation, setUserLocation] = useState("Sivasagar");
   const filteredDoctors = doctors.filter((doctor) => {
 const query = search.toLowerCase();
 
@@ -148,6 +183,9 @@ const dailyQuote = quotes[today % quotes.length];
   <p className="text-gray-500 mt-2 text-lg">
     Search specialists, hospitals and clinics recommended for your health.
   </p>
+  <p className="text-sm text-purple-600 mt-2">
+📍 Searching doctors near <strong>{userLocation}</strong>
+</p>
 
         {/* Search */}
       <div className="flex items-center gap-3 mb-6">
@@ -192,10 +230,15 @@ disabled={loading}
       setSearch("");
       setDoctors([]);
     } else {
-      setSelectedSpecialty(specialty);
-      setSearch(specialty);
-    }
-  }}
+  setSelectedSpecialty(specialty);
+  setSearch(specialty);
+
+  setTimeout(() => {
+    fetchDoctors();
+  }, 0);
+}
+ setLoading(true);
+ }}
   className={`px-5 py-2 rounded-full transition ${
     selectedSpecialty === specialty
       ? "bg-purple-500 text-white"
