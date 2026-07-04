@@ -313,13 +313,13 @@ results && (
           <button
             className="bg-[#b89af8] hover:bg-[#a986f2] text-white px-6 py-3 rounded-xl font-semibold"
             onClick={() => {
-              localStorage.setItem(
-                "recommendedSpecialist",
-                results.specialist.name
-              );
+  localStorage.setItem(
+    "recommendedSpecialist",
+    results.specialist.name
+  );
 
-              window.location.href = "/find-doctor";
-            }}
+  window.location.href = "/find-doctor";
+}}
           >
             Find Nearby Doctors
           </button>

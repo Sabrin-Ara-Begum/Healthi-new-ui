@@ -7,6 +7,7 @@ import proxyRoutes from "./routes/proxy.js";
 import mongoose from "mongoose";
 import SymptomHistory from "./models/SymptomHistory.js";
 import symptomRoutes from "./routes/symptoms.js";
+import doctorRoutes from "./routes/doctors.js";
 
 dotenv.config()
 
@@ -26,6 +27,7 @@ app.use(express.json())
 app.use("/api/auth", authRoutes);
 app.use("/api/proxy", proxyRoutes);
 app.use("/api/symptoms", symptomRoutes);
+app.use("/api/doctors", doctorRoutes);
 
 /**
  * SYMPTOM CHECKER AI

@@ -1,416 +1,438 @@
-  import { useState } from "react";
-  import { Search, MapPin } from "lucide-react";
-  import Header from "@/react-app/components/Header";
+import { useEffect, useState } from "react";
+import { Search, MapPin } from "lucide-react";
+import Header from "@/react-app/components/Header";
+import { UserCircle2 } from "lucide-react";
 
-  interface FindDoctorProps {
-    onNotificationClick: () => void;
+interface FindDoctorProps {
+  onNotificationClick: () => void;
+}
+interface Doctor {
+  id: number;
+  name: string;
+  specialty: string;
+
+  hospital: string;
+  location: string;
+
+  phone: string;
+
+  experience: string;
+  qualification: string;
+
+  rating: number;
+
+  fee: string;
+
+  availability: string;
+
+  languages: string[];
+
+  image: string;
+
+  mapsUrl: string;
+}
+
+
+const specialties = [
+"All",
+"General Physician",
+"Cardiologist",
+"Neurologist",
+"Dermatologist",
+"ENT Specialist",
+"Pediatrician",
+"Orthopedic Surgeon",
+"Gynecologist",
+];
+
+export default function FindDoctor({ onNotificationClick }: FindDoctorProps) {
+  const [search, setSearch] = useState("");
+  useEffect(() => {
+const specialist = localStorage.getItem("recommendedSpecialist");
+
+if (specialist) {
+setSearch(specialist);
+localStorage.removeItem("recommendedSpecialist");
+}
+}, []);
+
+const fetchDoctors = async () => {
+  if (!search.trim()) return;
+
+  try {
+    setLoading(true);
+
+    const response = await fetch("http://localhost:5001/api/doctors/find", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        specialty: search,
+        location: "Sivasagar",
+      }),
+    });
+
+    const data = await response.json();
+
+    console.log("Doctors:", data);
+
+    setDoctors(data.doctors || []);
+  } catch (err) {
+    console.error(err);
+  } finally {
+    setLoading(false);
   }
-  interface Doctor {
-    id: number;
-    name: string;
-    specialty: string;
-
-    hospital: string;
-    location: string;
-
-    phone: string;
-
-    experience: string;
-    qualification: string;
-
-    rating: number;
-
-    fee: string;
-
-    availability: string;
-
-    languages: string[];
-
-    image: string;
-
-    mapsUrl: string;
-  }
-
-  const doctors: Doctor[] = [
-    {
-      id: 1,
-      name: "Dr. Anya Sharma",
-      specialty: "Pediatrics",
-
-      hospital: "City Hospital",
-
-      location: "Guwahati",
-
-      phone: "+91 98765 43210",
-
-      experience: "12 Years",
-
-      qualification: "MBBS, MD (Pediatrics)",
-
-      rating: 4.9,
-
-      fee: "₹600",
-
-      availability: "Mon - Sat",
-
-      languages: ["English", "Hindi", "Assamese"],
-
-      image: "https://i.pravatar.cc/150?img=32",
-
-      mapsUrl: "https://maps.google.com",
-    },
-
-    {
-      id: 2,
-      name: "Dr. Sofia Chen",
-      specialty: "Dermatology",
-
-      hospital: "Skin Care Clinic",
-
-      location: "Silchar",
-
-      phone: "+91 98765 11111",
-
-      experience: "9 Years",
-
-      qualification: "MBBS, MD (Dermatology)",
-
-      rating: 4.8,
-
-      fee: "₹700",
-
-      availability: "Mon - Fri",
-
-      languages: ["English", "Hindi"],
-
-      image: "https://i.pravatar.cc/150?img=48",
-
-      mapsUrl: "https://maps.google.com",
-    },
-  ];
-  const specialties = [
-    "All",
-    "General",
-    "Cardiology",
-    "Neurology",
-    "Dermatology",
-    "ENT",
-    "Pediatrics",
-    "Orthopedics",
-    "Gynecology",
-  ];
-
-  export default function FindDoctor({ onNotificationClick }: FindDoctorProps) {
-    const [search, setSearch] = useState("");
-    const [selectedSpecialty, setSelectedSpecialty] = useState("All");
-    const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(null);
-
+};
+  const [selectedSpecialty, setSelectedSpecialty] = useState("All");
+  const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(null);
+  const [doctors, setDoctors] = useState<Doctor[]>([]);
+  const [loading, setLoading] = useState(false);
   const filteredDoctors = doctors.filter((doctor) => {
-    const query = search.toLowerCase();
+const query = search.toLowerCase();
 
-    const matchesSearch =
-    doctor.name.toLowerCase().includes(query) ||
-    doctor.specialty.toLowerCase().includes(query) ||
-    doctor.location.toLowerCase().includes(query) ||
-    doctor.hospital.toLowerCase().includes(query);
+return (
+doctor.name.toLowerCase().includes(query) ||
+doctor.specialty.toLowerCase().includes(query) ||
+doctor.location.toLowerCase().includes(query) ||
+doctor.hospital.toLowerCase().includes(query)
+);
+});
 
-    const matchesSpecialty =
-      selectedSpecialty === "All" ||
-      doctor.specialty === selectedSpecialty;
-
-    return matchesSearch && matchesSpecialty;
-  });
-    return (
-      <div className="flex-1 overflow-auto">
-        <Header onNotificationClick={onNotificationClick} />
+  return (
+    <div className="flex-1 overflow-auto">
+      <Header onNotificationClick={onNotificationClick} />
 
 <div className="px-10 py-8 space-y-8 max-w-7xl mx-auto">
-    <h1 className="text-4xl font-bold text-gray-800">
-      Find the Right Doctor
-    </h1>
+  <h1 className="text-4xl font-bold text-gray-800">
+    Find the Right Doctor
+  </h1>
 
-    <p className="text-gray-500 mt-2 text-lg">
-      Search specialists, hospitals and clinics recommended for your health.
-    </p>
+  <p className="text-gray-500 mt-2 text-lg">
+    Search specialists, hospitals and clinics recommended for your health.
+  </p>
 
-          {/* Search */}
-          <div className="mb-6 relative">
-            <Search className="absolute left-4 top-4 w-5 h-5 text-gray-400" />
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search doctor, specialty or hospital..."
-              className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200"
-            />
-          </div>
-          <div className="flex flex-wrap gap-3 mb-8">
-    {specialties.map((specialty) => (
-      <button
-    key={specialty}
-    onClick={() =>
-      setSelectedSpecialty(
-        selectedSpecialty === specialty ? "All" : specialty
-      )
+        {/* Search */}
+      <div className="flex items-center gap-3 mb-6">
+
+<div className="relative flex-1 max-w-xl">
+<Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+
+<input
+disabled={loading}
+  value={search}
+  onChange={(e) => setSearch(e.target.value)}
+  onKeyDown={(e) => {
+  if (e.key === "Enter" && !loading) {
+    fetchDoctors();
+  }
+}}
+    placeholder="Search doctor or specialty..."
+  className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-400"/>
+  
+</div>
+
+<button
+  onClick={fetchDoctors}
+  disabled={loading}
+  className={`px-6 py-3 rounded-xl transition ${
+    loading
+      ? "bg-gray-400 cursor-not-allowed"
+      : "bg-purple-500 text-white hover:bg-purple-600"
+  }`}
+>
+  {loading ? "Searching..." : "Search"}
+</button>
+
+</div>
+        <div className="flex flex-wrap gap-3 mb-8">
+{specialties.map((specialty) => (
+<button
+  key={specialty}
+  onClick={() => {
+    if (selectedSpecialty === specialty) {
+      setSelectedSpecialty("All");
+      setSearch("");
+      setDoctors([]);
+    } else {
+      setSelectedSpecialty(specialty);
+      setSearch(specialty);
     }
-    className={`px-5 py-2 rounded-full transition ${
-      selectedSpecialty === specialty
-        ? "bg-purple-500 text-white"
-        : "bg-white border border-purple-200 hover:bg-purple-100"
-    }`}
-  >
-    {specialty}
-  </button>
-    ))}
-  </div>
+  }}
+  className={`px-5 py-2 rounded-full transition ${
+    selectedSpecialty === specialty
+      ? "bg-purple-500 text-white"
+      : "bg-white border border-purple-200 hover:bg-purple-100"
+  }`}
+>
+  {specialty}
+</button>
+))}
+</div>
+{loading && (
+<div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-center">
+🔎 Searching nearby doctors...
 
-          {/* Doctor Cards */}
+Please wait a few seconds.
+</div>
+)}
+
+        {/* Doctor Cards */}
+    <div
+id="doctor-list"
+className="grid grid-cols-1 md:grid-cols-2 gap-6">
+  {filteredDoctors.length > 0 ? (
+    filteredDoctors.map((doctor) => (
       <div
-  id="doctor-list"
-  className="grid grid-cols-1 md:grid-cols-2 gap-6">
-    {filteredDoctors.length > 0 ? (
-      filteredDoctors.map((doctor) => (
-        <div
-          key={doctor.id}
-          className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm"
-        >
-          <div className="flex justify-between items-start">
+        key={doctor.id}
+        className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm"
+      >
+        <div className="flex justify-between items-start">
 
-  <div>
+<div>
 
-    <h3 className="text-xl font-bold">
-      {doctor.name}
-    </h3>
+  <h3 className="text-xl font-bold">
+    {doctor.name}
+  </h3>
 
-    <p className="text-purple-600 font-semibold">
-      {doctor.specialty}
-    </p>
+  <p className="text-purple-600 font-semibold">
+    {doctor.specialty}
+  </p>
 
-    <p className="text-sm text-gray-500">
-      {doctor.hospital}
-    </p>
+  <p className="text-sm text-gray-500">
+    {doctor.hospital}
+  </p>
 
-  </div>
-
+</div>
+{doctor.image ? (
   <img
     src={doctor.image}
     alt={doctor.name}
     className="w-16 h-16 rounded-full object-cover border-2 border-purple-200"/>
-
+) : (
+  <UserCircle2 className="w-16 h-16 text-gray-400" />
+)}
 </div>
 
-<div className="flex items-center gap-2 mt-4 text-gray-500">
+<a
+  href={doctor.mapsUrl}
+  target="_blank"
+  rel="noopener noreferrer"
+  className="flex items-center gap-2 mt-4 text-blue-600 hover:underline"
+>
   <MapPin className="w-4 h-4" />
   <span>{doctor.location}</span>
-</div>
+</a>
 
 <div className="grid grid-cols-2 gap-3 mt-5">
 
-  <div className="bg-purple-50 rounded-xl p-3 text-center">
-    <p className="text-xs text-gray-500">Rating</p>
-    <p className="font-bold">⭐ {doctor.rating}</p>
-  </div>
+<div className="bg-purple-50 rounded-xl p-3 text-center">
+  <p className="text-xs text-gray-500">Rating</p>
+  <p className="font-bold">⭐ {doctor.rating}</p>
+</div>
 
-  <div className="bg-blue-50 rounded-xl p-3 text-center">
-    <p className="text-xs text-gray-500">Experience</p>
-    <p className="font-bold">{doctor.experience}</p>
-  </div>
+<div className="bg-blue-50 rounded-xl p-3 text-center">
+  <p className="text-xs text-gray-500">Experience</p>
+  <p className="font-bold">{doctor.experience}</p>
+</div>
 
-  <div className="bg-green-50 rounded-xl p-3 text-center">
-    <p className="text-xs text-gray-500">Consultation</p>
-    <p className="font-bold">{doctor.fee}</p>
-  </div>
+<div className="bg-green-50 rounded-xl p-3 text-center">
+  <p className="text-xs text-gray-500">Consultation</p>
+  <p className="font-bold">{doctor.fee}</p>
+</div>
 
-  <div className="bg-orange-50 rounded-xl p-3 text-center">
-    <p className="text-xs text-gray-500">Available</p>
-    <p className="font-bold">{doctor.availability}</p>
-  </div>
+<div className="bg-orange-50 rounded-xl p-3 text-center">
+  <p className="text-xs text-gray-500">Available</p>
+  <p className="font-bold">{doctor.availability}</p>
+</div>
 
 </div>
 
-          <div className="flex gap-3 mt-5">
-          <button
-    onClick={() => setSelectedDoctor(doctor)}
-    className="flex-1 border border-purple-300 rounded-xl py-2 hover:bg-purple-50"
-  >
-    View Profile
-  </button>
-
-            <a
-  href={`tel:${doctor.phone}`}
-  className="flex-1 bg-purple-500 text-white rounded-xl py-2 text-center hover:bg-purple-600"
->
-  📞 Call
-</a>
-          </div>
-        </div>
-      ))
-    ) : (
-      <div className="col-span-full bg-white rounded-2xl p-10 text-center shadow-sm">
-        <div className="text-6xl mb-4">🔍</div>
-
-        <h2 className="text-2xl font-bold">
-          No Doctors Found
-        </h2>
-
-        <p className="text-gray-500 mt-2">
-          Try searching with another specialty or hospital.
-        </p>
-      </div>
-    )}
-  </div>
-  <div className="bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-3xl p-8 shadow-lg">
-
-  <div className="flex justify-between items-start">
-
-    <div>
-
-      <h2 className="text-2xl font-bold">
-        ✨ AI Recommendation
-      </h2>
-
-      <p className="mt-2 opacity-90">
-        Based on your latest symptom analysis
-      </p>
-
-    </div>
-
-    <div className="bg-white/20 px-4 py-2 rounded-xl text-center">
-
-      <p className="text-xs">Confidence</p>
-
-      <h2 className="text-2xl font-bold">
-        92%
-      </h2>
-
-    </div>
-
-  </div>
-
-  <div className="bg-white/20 rounded-2xl p-6 mt-6">
-
-    <p className="text-sm opacity-80">
-      Recommended Specialist
-    </p>
-
-    <h2 className="text-3xl font-bold mt-1">
-      General Physician
-    </h2>
-
-    <div className="mt-5">
-
-      <p className="font-semibold mb-2">
-        Why?
-      </p>
-
-      <ul className="space-y-2 list-disc ml-5">
-
-        <li>Your symptoms are non-specific.</li>
-
-        <li>An initial clinical examination is recommended.</li>
-
-        <li>A General Physician can refer you if required.</li>
-
-      </ul>
-
-    </div>
-
-    <button
-      onClick={() => {
-        setSelectedSpecialty("General");
-
-        document
-          .getElementById("doctor-list")
-          ?.scrollIntoView({ behavior: "smooth" });
-      }}
-      className="mt-6 bg-white text-purple-700 px-6 py-3 rounded-xl font-semibold hover:bg-gray-100"
-    >
-      View Doctors
-    </button>
-
-  </div>
-
-</div>
-
-          <div className="mt-10 bg-red-50 border border-red-200 rounded-3xl p-6">
-
-    <h2 className="text-xl font-bold text-red-600">
-      🚨 Emergency?
-    </h2>
-
-    <p className="mt-3 text-gray-700">
-      If you experience chest pain, difficulty breathing,
-      severe bleeding or loss of consciousness,
-      please visit the nearest emergency department immediately.
-    </p>
-
-  </div>
-  {selectedDoctor && (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-
-      <div className="bg-white rounded-3xl w-[500px] p-8 shadow-2xl relative">
-
+        <div className="flex gap-3 mt-5">
         <button
-          onClick={() => setSelectedDoctor(null)}
-          className="absolute right-5 top-5 text-xl"
-        >
-          ✕
-        </button>
+  onClick={() => setSelectedDoctor(doctor)}
+  className="flex-1 border border-purple-300 rounded-xl py-2 hover:bg-purple-50"
+>
+  View Profile
+</button>
 
-        <div className="flex flex-col items-center">
-
-          <img
-    src={selectedDoctor.image}
-            className="w-28 h-28 rounded-full"
-          />
-
-          <h2 className="text-2xl font-bold mt-4">
-            {selectedDoctor.name}
-          </h2>
-
-          <p className="text-purple-600 font-semibold">
-            {selectedDoctor.specialty}
-          </p>
-
+          <a
+href={`tel:${doctor.phone}`}
+className="flex-1 bg-purple-500 text-white rounded-xl py-2 text-center hover:bg-purple-600"
+>
+📞 Call
+</a>
         </div>
-
-        <div className="mt-6 space-y-3">
-
-          <p>⭐ {selectedDoctor.rating}</p>
-
-          <p>🏥 🏥 {selectedDoctor.hospital}</p>
-
-          <p>🩺 {selectedDoctor.experience}</p>
-
-          <p>💰 {selectedDoctor.fee}</p>
-
-          <p>📞 📞 {selectedDoctor.phone}</p>
-          <p>🎓 {selectedDoctor.qualification}</p>
-
-  <p>🕒 {selectedDoctor.availability}</p>
-
-  <p>
-    🌐 {selectedDoctor.languages.join(", ")}
-  </p>
-
-        </div>
-
-        <div className="flex gap-3 mt-8">
-
-          <button className="flex-1 bg-purple-500 text-white rounded-xl py-3">
-            Book Appointment
-          </button>
-
-          <button className="flex-1 border rounded-xl py-3">
-            Call
-          </button>
-
-        </div>
-
       </div>
+    ))
+  ) : (
+    <div className="col-span-full bg-white rounded-2xl p-10 text-center shadow-sm">
+      <div className="text-6xl mb-4">🔍</div>
 
+      <h2 className="text-2xl font-bold">
+        No Doctors Found
+      </h2>
+
+      <p className="text-gray-500 mt-2">
+        Try searching with another specialty or hospital.
+      </p>
     </div>
   )}
-        </div>
+</div>
+<div className="bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-3xl p-8 shadow-lg">
+
+<div className="flex justify-between items-start">
+
+  <div>
+
+    <h2 className="text-2xl font-bold">
+      ✨ AI Recommendation
+    </h2>
+
+    <p className="mt-2 opacity-90">
+      Based on your latest symptom analysis
+    </p>
+
+  </div>
+
+  <div className="bg-white/20 px-4 py-2 rounded-xl text-center">
+
+    <p className="text-xs">Confidence</p>
+
+    <h2 className="text-2xl font-bold">
+      92%
+    </h2>
+
+  </div>
+
+</div>
+
+<div className="bg-white/20 rounded-2xl p-6 mt-6">
+
+  <p className="text-sm opacity-80">
+    Recommended Specialist
+  </p>
+
+  <h2 className="text-3xl font-bold mt-1">
+    General Physician
+  </h2>
+
+  <div className="mt-5">
+
+    <p className="font-semibold mb-2">
+      Why?
+    </p>
+
+    <ul className="space-y-2 list-disc ml-5">
+
+      <li>Your symptoms are non-specific.</li>
+
+      <li>An initial clinical examination is recommended.</li>
+
+      <li>A General Physician can refer you if required.</li>
+
+    </ul>
+
+  </div>
+
+  <button
+onClick={() => {
+setSelectedSpecialty("General Physician");
+setSearch("General Physician");
+
+document
+  .getElementById("doctor-list")
+  ?.scrollIntoView({ behavior: "smooth" });
+}}
+className="mt-6 bg-white text-purple-700 px-6 py-3 rounded-xl font-semibold hover:bg-gray-100"
+>
+View Doctors
+</button>
+
+</div>
+
+</div>
+
+        <div className="mt-10 bg-red-50 border border-red-200 rounded-3xl p-6">
+
+  <h2 className="text-xl font-bold text-red-600">
+    🚨 Emergency?
+  </h2>
+
+  <p className="mt-3 text-gray-700">
+    If you experience chest pain, difficulty breathing,
+    severe bleeding or loss of consciousness,
+    please visit the nearest emergency department immediately.
+  </p>
+
+</div>
+{selectedDoctor && (
+  <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+
+    <div className="bg-white rounded-3xl w-[500px] p-8 shadow-2xl relative">
+
+      <button
+        onClick={() => setSelectedDoctor(null)}
+        className="absolute right-5 top-5 text-xl"
+      >
+        ✕
+      </button>
+
+      <div className="flex flex-col items-center">
+
+        <img
+  src={selectedDoctor.image}
+          className="w-28 h-28 rounded-full"
+        />
+
+        <h2 className="text-2xl font-bold mt-4">
+          {selectedDoctor.name}
+        </h2>
+
+        <p className="text-purple-600 font-semibold">
+          {selectedDoctor.specialty}
+        </p>
+
       </div>
-    );
-  }
+
+      <div className="mt-6 space-y-3">
+
+        <p>⭐ {selectedDoctor.rating}</p>
+
+        <p>🏥 🏥 {selectedDoctor.hospital}</p>
+
+        <p>🩺 {selectedDoctor.experience}</p>
+
+        <p>💰 {selectedDoctor.fee}</p>
+
+        <p>📞 📞 {selectedDoctor.phone}</p>
+        <p>🎓 {selectedDoctor.qualification}</p>
+
+<p>🕒 {selectedDoctor.availability}</p>
+
+<p>
+  🌐 {selectedDoctor.languages.join(", ")}
+</p>
+
+      </div>
+
+      <div className="flex gap-3 mt-8">
+
+        <button className="flex-1 bg-purple-500 text-white rounded-xl py-3">
+          Book Appointment
+        </button>
+
+        <button className="flex-1 border rounded-xl py-3">
+          Call
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+)}
+      </div>
+    </div>
+  );
+}
