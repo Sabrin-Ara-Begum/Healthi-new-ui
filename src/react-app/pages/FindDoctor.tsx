@@ -98,6 +98,43 @@ doctor.location.toLowerCase().includes(query) ||
 doctor.hospital.toLowerCase().includes(query)
 );
 });
+const quotes = [
+  {
+    quote: "Your body hears everything your mind says.",
+    author: "Naomi Judd",
+  },
+  {
+    quote: "Health is not valued till sickness comes.",
+    author: "Thomas Fuller",
+  },
+  {
+    quote: "Take care of your body. It's the only place you have to live.",
+    author: "Jim Rohn",
+  },
+  {
+    quote: "A healthy outside starts from the inside.",
+    author: "Robert Urich",
+  },
+  {
+    quote: "The greatest wealth is health.",
+    author: "Virgil",
+  },
+  {
+    quote: "Every small healthy habit compounds into a healthier life.",
+    author: "Healthi",
+  },
+  {
+    quote: "Drink water, move your body, and rest well. Your future self will thank you.",
+    author: "Healthi",
+  },
+  {
+    quote: "Healing isn't a race. Give yourself the time you deserve.",
+    author: "Healthi",
+  },
+];
+
+const today = new Date().getDate();
+const dailyQuote = quotes[today % quotes.length];
 
   return (
     <div className="flex-1 overflow-auto">
@@ -281,75 +318,29 @@ className="flex-1 bg-purple-500 text-white rounded-xl py-2 text-center hover:bg-
 </div>
 <div className="bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-3xl p-8 shadow-lg">
 
-<div className="flex justify-between items-start">
+  <div className="text-center">
 
-  <div>
-
-    <h2 className="text-2xl font-bold">
-      ✨ AI Recommendation
+    <h2 className="text-3xl font-bold">
+      💜 Daily Health Motivation
     </h2>
 
-    <p className="mt-2 opacity-90">
-      Based on your latest symptom analysis
+    <p className="mt-3 opacity-90">
+      A small reminder from Healthi
     </p>
 
   </div>
 
-  <div className="bg-white/20 px-4 py-2 rounded-xl text-center">
+  <div className="bg-white/20 rounded-2xl p-8 mt-8">
 
-    <p className="text-xs">Confidence</p>
-
-    <h2 className="text-2xl font-bold">
-      92%
-    </h2>
-
-  </div>
-
-</div>
-
-<div className="bg-white/20 rounded-2xl p-6 mt-6">
-
-  <p className="text-sm opacity-80">
-    Recommended Specialist
-  </p>
-
-  <h2 className="text-3xl font-bold mt-1">
-    General Physician
-  </h2>
-
-  <div className="mt-5">
-
-    <p className="font-semibold mb-2">
-      Why?
+    <p className="text-2xl italic leading-relaxed text-center">
+      "{dailyQuote.quote}"
     </p>
 
-    <ul className="space-y-2 list-disc ml-5">
-
-      <li>Your symptoms are non-specific.</li>
-
-      <li>An initial clinical examination is recommended.</li>
-
-      <li>A General Physician can refer you if required.</li>
-
-    </ul>
+    <p className="mt-8 text-right font-semibold text-lg">
+      — {dailyQuote.author}
+    </p>
 
   </div>
-
-  <button
-onClick={() => {
-setSelectedSpecialty("General Physician");
-setSearch("General Physician");
-
-document
-  .getElementById("doctor-list")
-  ?.scrollIntoView({ behavior: "smooth" });
-}}
-className="mt-6 bg-white text-purple-700 px-6 py-3 rounded-xl font-semibold hover:bg-gray-100"
->
-View Doctors
-</button>
-
-</div>
 
 </div>
 
