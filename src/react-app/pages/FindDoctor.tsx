@@ -96,7 +96,7 @@ const fetchDoctors = async () => {
       location: userLocation,
     });
 
-    const response = await fetch("http://localhost:5001/api/doctors/find", {
+    const response = await fetch("https://healthi-ai-bppm.onrender.com/api/doctors/find", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
