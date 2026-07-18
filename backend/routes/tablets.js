@@ -1,36 +1,79 @@
-const express = require("express");
+import express from "express";
+import multer from "multer";
+import OpenAI from "openai";
+import fs from "fs";
+
 const router = express.Router();
-const axios = require("axios");
 
-// Example endpoint using OpenRouter API
-router.post("/", async (req, res) => {
-  const { prompt } = req.body;
+const upload = multer({
+  dest: "uploads/",
+});
 
+const client = new OpenAI({
+  baseURL: "https://openrouter.ai/api/v1",
+  apiKey: process.env.OPENROUTER_API_KEY,
+});
+
+router.post("/", upload.single("image"), async (req, res) => {
   try {
-    const response = await axios.post(
-      "https://openrouter.ai/api/v1/responses",
-      {
-        model: "gpt-4o-mini",
-        input: prompt,
-      },
-      {
-        headers: {
-          "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    if (!req.file) {
+      return res.status(400).json({
+        message: "No image uploaded",
+      });
+    }
 
-    res.json({
-      message: "Tablet route success",
-      response: response.data,
+    const imageBuffer = fs.readFileSync(req.file.path);
+    const base64 = imageBuffer.toString("base64");
+
+    const completion = await client.chat.completions.create({
+      model: "openai/gpt-4.1-mini",
+      messages: [
+        {
+          role: "user",
+          content: [
+            {
+              type: "text",
+              text: `
+You are a medicine identification expert.
+
+Look carefully at this tablet or medicine strip.
+
+Return ONLY valid JSON.
+
+{
+"name":"",
+"manufacturer":"",
+"strength":"",
+"confidence":"",
+"uses":"",
+"dosage":"",
+"sideEffects":"",
+"warnings":"",
+"alternatives":""
+}
+`,
+            },
+            {
+              type: "image_url",
+              image_url: {
+                url: `data:image/jpeg;base64,${base64}`,
+              },
+            },
+          ],
+        },
+      ],
     });
+
+    fs.unlinkSync(req.file.path);
+
+    res.json(JSON.parse(completion.choices[0].message.content));
   } catch (err) {
-    console.error(err.response?.data || err.message);
-    res.status(500).json({ message: "Tablet route error", error: err.message });
+    console.error(err);
+
+    res.status(500).json({
+      message: "Medicine identification failed",
+    });
   }
 });
 
-module.exports = router;
-
-
+export default router;

@@ -10,6 +10,7 @@ import Auth from "@/react-app/pages/Auth";
 import Profile from "@/react-app/pages/Profile";
 import SymptomChecker from "@/react-app/pages/SymptomChecker";
 import FindDoctor from "./pages/FindDoctor";
+import TabletIdentifier from "./pages/TabletIdentifier";
 
 export default function App() {
   const [notificationOpen, setNotificationOpen] = useState(false);
@@ -54,12 +55,14 @@ export default function App() {
               element={<MoodTracker onNotificationClick={() => setNotificationOpen(true)} />}
             />
             <Route
-              path="/tablet-identifier"
-              element={<ComingSoon title="Tablet Identifier" onNotificationClick={() => setNotificationOpen(true)} />}
-            />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/profile" element={<Profile />} />
-          </Routes>
+  path="/tablet-identifier"
+  element={
+    <TabletIdentifier
+      onNotificationClick={() => setNotificationOpen(true)}
+    />
+  }
+/>
+</Routes>
           <Footer />
         </div>
         <NotificationPanel

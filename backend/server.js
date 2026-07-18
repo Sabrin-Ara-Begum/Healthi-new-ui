@@ -8,7 +8,7 @@ import mongoose from "mongoose";
 import SymptomHistory from "./models/SymptomHistory.js";
 import symptomRoutes from "./routes/symptoms.js";
 import doctorRoutes from "./routes/doctors.js";
-
+import tabletRoutes from "./routes/tablets.js";
 dotenv.config()
 
 mongoose.connect(process.env.MONGO_URI)
@@ -28,6 +28,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/proxy", proxyRoutes);
 app.use("/api/symptoms", symptomRoutes);
 app.use("/api/doctors", doctorRoutes);
+app.use("/api/tablets", tabletRoutes);
 
 /**
  * SYMPTOM CHECKER AI
