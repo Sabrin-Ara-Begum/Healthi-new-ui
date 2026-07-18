@@ -42,7 +42,7 @@ app.post("/api/openrouter/chat", async (req, res) => {
       headers: {
         "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
         "Content-Type": "application/json",
-        "HTTP-Referer": "http://localhost:5174",
+        "HTTP-Referer": "http://healthi-ai-bppm.onrender.com",
         "X-Title": "Healthi AI",
       },
       body: JSON.stringify({
