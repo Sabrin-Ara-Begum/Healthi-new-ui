@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { identifyMedicine } from "../api/tabletApi";
 import Header from "@/react-app/components/Header";
 import {
   Camera,
@@ -50,11 +51,13 @@ const [cameraOpen, setCameraOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const [result, setResult] = useState<MedicineResult | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const handleFile = (file: File) => {
     setImage(file);
     setPreview(URL.createObjectURL(file));
     setResult(null);
+    setSelectedFile(file);
   };
 
   const removeImage = () => {
@@ -121,48 +124,26 @@ const takePhoto = () => {
   }, "image/jpeg");
 };
 
-  const fakeAnalyze = async () => {
-    if (!image) return;
+ const analyzeMedicine = async () => {
+  if (!selectedFile) return;
 
+  try {
     setLoading(true);
 
-    await new Promise((resolve) =>
-      setTimeout(resolve, 3000)
-    );
+    const data = await identifyMedicine(selectedFile);
 
-    setResult({
-      medicine: "Dolo 650",
-      generic: "Paracetamol",
+    console.log(data);
 
-      composition: "Paracetamol IP 650mg",
+    setResult(data);
 
-      confidence: 97,
+  } catch (err) {
+    console.error(err);
 
-      uses: [
-        "Fever",
-        "Body Pain",
-        "Headache",
-        "Cold & Flu",
-      ],
-
-      dosage:
-        "1 tablet after meals every 6 hours or as prescribed by a physician.",
-
-      sideEffects: [
-        "Nausea",
-        "Skin Rash",
-        "Liver damage (rare)",
-      ],
-
-      warnings: [
-        "Avoid alcohol",
-        "Not for overdose",
-        "Consult doctor during pregnancy",
-      ],
-    });
-
+    alert("Medicine identification failed.");
+  } finally {
     setLoading(false);
-  };
+  }
+};
 
   return (
     <>
@@ -409,7 +390,7 @@ Our AI will examine
 
 <button
 
-onClick={fakeAnalyze}
+onClick={analyzeMedicine}
 
 disabled={loading}
 
