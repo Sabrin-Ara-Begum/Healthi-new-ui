@@ -8,7 +8,6 @@ import {
   Trash2,
   Loader2,
   MapPin,
-  ExternalLink,
   CheckCircle2,
   AlertTriangle,
   Pill,
@@ -44,8 +43,6 @@ const [cameraOpen, setCameraOpen] = useState(false);
 
   const [dragging, setDragging] = useState(false);
 
-  const [image, setImage] = useState<File | null>(null);
-
   const [preview, setPreview] = useState("");
 
   const [loading, setLoading] = useState(false);
@@ -54,14 +51,12 @@ const [cameraOpen, setCameraOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const handleFile = (file: File) => {
-    setImage(file);
     setPreview(URL.createObjectURL(file));
     setResult(null);
     setSelectedFile(file);
   };
 
   const removeImage = () => {
-    setImage(null);
     setPreview("");
     setResult(null);
   };
