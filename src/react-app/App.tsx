@@ -66,15 +66,6 @@ export default function App() {
     />
   }
 />
-            <Route
-
-  path="/tablet-identifier"
-  element={
-    <TabletIdentifier
-      onNotificationClick={() => setNotificationOpen(true)}
-    />
-  }
-/>
 </Routes>
           <Footer />
         </div>
