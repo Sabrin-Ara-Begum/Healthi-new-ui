@@ -54,7 +54,20 @@ export default function App() {
               path="/mood-tracker"
               element={<MoodTracker onNotificationClick={() => setNotificationOpen(true)} />}
             />
+            <Route path="/auth" element={<Auth />} />
+
+<Route path="/profile" element={<Profile />} />
+
+<Route
+  path="/tablet-identifier"
+  element={
+    <TabletIdentifier
+      onNotificationClick={() => setNotificationOpen(true)}
+    />
+  }
+/>
             <Route
+
   path="/tablet-identifier"
   element={
     <TabletIdentifier
