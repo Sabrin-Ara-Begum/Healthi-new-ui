@@ -1,34 +1,38 @@
-const express = require("express");
-const router = express.Router();
-const OpenAI = require("openai"); // still use openai SDK
+import express from "express";
+import OpenAI from "openai";
+import dotenv from "dotenv";
 
-require("dotenv").config();
+dotenv.config();
+
+const router = express.Router();
 
 // Initialize OpenRouter via OpenAI SDK
 const client = new OpenAI({
   apiKey: process.env.OPENROUTER_API_KEY,
-  // IMPORTANT: point base URL to OpenRouter
   baseURL: "https://openrouter.ai/api/v1",
 });
 
 /**
- * POST /api/symptoms/check
- * Body: { symptoms: "fever, cough, headache" }
+ * POST /api/mood/check
+ * Body: { mood: "I feel anxious today", history: [] }
  */
 router.post("/check", async (req, res) => {
   try {
-    const { mood } = req.body;
+    const { mood, history = [] } = req.body;
 
     if (!mood) {
       return res.status(400).json({ message: "Please express your mood" });
     }
 
+    const chatHistory = history.map(h => `${h.role === 'user' ? 'User' : 'Companion'}: ${h.text}`).join('\n');
+    const userMessage = mood;
+
     const completion = await client.chat.completions.create({
-      model: "openai/gpt-3.5-turbo", // use an available model (OpenRouter supports many)
+      model: "openai/gpt-3.5-turbo",
       messages: [
         {
-          role: "user",
- content: `
+          role: "system",
+          content: `
 You are a compassionate, warm, and empathetic AI Companion. Your sole purpose is to listen to the user, validate their feelings, and help them feel calmer, safer, and less alone.
 
 Follow these strict conversational principles:
@@ -37,32 +41,36 @@ Follow these strict conversational principles:
 3. **No Rigid Bullet Points or Lists:** Do not use structured lists, markdown asterisks (**), or hashtags. Speak in soft, flowing, human-like sentences.
 4. **Ask Gentle, Open-Ended Questions:** End your response with a single, low-pressure question that invites them to share more *if* they want to (e.g., "Do you want to talk about what happened, or would you rather just vent?").
 5. **Tone:** Keep your tone warm, authentic, gentle, and completely non-judgmental. Do not sound like a clinical textbook or an overly cheery toxic-positive cheerleader.
-
+`
+        },
+        {
+          role: "user",
+          content: `
 Current conversation history:
 ${chatHistory}
 
 User says: "${userMessage}"
 
 Respond naturally based on these rules:
-`,
-        },
+`
+        }
       ],
       max_tokens: 500,
     });
 
-    const result = completion.choices[0].message.content;
+    const result = completion.choices[0].message.content.trim();
 
     res.json({
       message: "Success",
       result,
     });
   } catch (err) {
-    console.error(err.response ? err.response.data : err.message);
+    console.error(err);
     res.status(500).json({
-      message: "Error checking symptoms",
-      error: err.response ? err.response.data : err.message,
+      message: "Error checking mood",
+      error: err.message,
     });
   }
 });
 
-module.exports = router;
+export default router;

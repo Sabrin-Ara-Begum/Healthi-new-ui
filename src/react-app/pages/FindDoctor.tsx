@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Search, MapPin } from "lucide-react";
 import Header from "@/react-app/components/Header";
 import { UserCircle2 } from "lucide-react";
+import { API_BASE } from "../api/config";
 
 interface FindDoctorProps {
   onNotificationClick: () => void;
@@ -96,7 +97,7 @@ const fetchDoctors = async () => {
       location: userLocation,
     });
 
-    const response = await fetch("https://healthi-ai-bppm.onrender.com/api/doctors/find", {
+    const response = await fetch(`${API_BASE}/api/doctors/find`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

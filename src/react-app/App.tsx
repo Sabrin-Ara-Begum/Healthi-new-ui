@@ -11,19 +11,21 @@ import Profile from "@/react-app/pages/Profile";
 import SymptomChecker from "@/react-app/pages/SymptomChecker";
 import FindDoctor from "./pages/FindDoctor";
 import TabletIdentifier from "./pages/TabletIdentifier";
+import { SidebarProvider } from "@/react-app/lib/SidebarContext";
 
 export default function App() {
   const [notificationOpen, setNotificationOpen] = useState(false);
 
   return (
     <Router>
-      <div
-        className="flex h-screen overflow-hidden"
-        style={{
-          background: "linear-gradient(135deg, #F3E8FF 0%, #DCD2FD 50%, #B9A9FB 100%)",
-        }}
-      >
-        <Sidebar />
+      <SidebarProvider>
+        <div
+          className="flex h-screen overflow-hidden"
+          style={{
+            background: "linear-gradient(135deg, #F3E8FF 0%, #DCD2FD 50%, #B9A9FB 100%)",
+          }}
+        >
+          <Sidebar />
         <div className="flex-1 flex flex-col overflow-hidden">
           <Routes>
             <Route
@@ -74,6 +76,7 @@ export default function App() {
           onClose={() => setNotificationOpen(false)}
         />
       </div>
+      </SidebarProvider>
     </Router>
   );
 }

@@ -1,7 +1,9 @@
+import { API_BASE } from "./config";
+
 export const sendMessage = async (message: string) => {
   const user = JSON.parse(localStorage.getItem("user") || "{}");
 
-  const res = await fetch("https://healthi-ai-bppm.onrender.com/api/openrouter/chat", {
+  const res = await fetch(`${API_BASE}/api/openrouter/chat`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -21,7 +23,7 @@ export const getSymptomHistory = async () => {
 
   if (!user.email) return [];
 
-  const res = await fetch(`https://healthi-ai-bppm.onrender.com/api/history/${user.email}`);
+  const res = await fetch(`${API_BASE}/api/history/${user.email}`);
   const data = await res.json();
 
   return data;

@@ -1,7 +1,7 @@
-const API_BASE_URL = "https://healthi-ai-bppm.onrender.com/api/symptoms";
+import { API_BASE } from "./config";
 
 export const checkSymptoms = async (symptoms: string, userEmail: string) => {
-  const res = await fetch(`${API_BASE_URL}/check`, {
+  const res = await fetch(`${API_BASE}/api/symptoms/check`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -18,10 +18,7 @@ export const checkSymptoms = async (symptoms: string, userEmail: string) => {
 };
 
 export const getSymptomHistory = async (email: string) => {
-  const res = await fetch(
-    `https://healthi-ai-bppm.onrender.com/api/history/${email}`
-  );
-
+  const res = await fetch(`${API_BASE}/api/history/${email}`);
   const data = await res.json();
   return data;
 };

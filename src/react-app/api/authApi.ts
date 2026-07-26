@@ -1,6 +1,7 @@
-export const signupUser = async (name: string, email: string, password: string) => {
+import { API_BASE } from "./config";
 
-  const res = await fetch("https://healthi-ai-bppm.onrender.com/api/auth/signup", {
+export const signupUser = async (name: string, email: string, password: string) => {
+  const res = await fetch(`${API_BASE}/api/auth/signup`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
@@ -17,8 +18,7 @@ export const signupUser = async (name: string, email: string, password: string) 
 };
 
 export const loginUser = async (email: string, password: string) => {
-
-  const res = await fetch("https://healthi-ai-bppm.onrender.com/api/auth/login", {
+  const res = await fetch(`${API_BASE}/api/auth/login`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json"

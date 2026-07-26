@@ -1,34 +1,36 @@
-const express = require("express");
-const router = express.Router();
-const OpenAI = require("openai"); // still use openai SDK
+import express from "express";
+import OpenAI from "openai";
+import dotenv from "dotenv";
+import SymptomHistory from "../models/SymptomHistory.js";
 
-require("dotenv").config();
+dotenv.config();
+
+const router = express.Router();
 
 // Initialize OpenRouter via OpenAI SDK
 const client = new OpenAI({
   apiKey: process.env.OPENROUTER_API_KEY,
-  // IMPORTANT: point base URL to OpenRouter
   baseURL: "https://openrouter.ai/api/v1",
 });
 
 /**
  * POST /api/symptoms/check
- * Body: { symptoms: "fever, cough, headache" }
+ * Body: { symptoms: "fever, cough, headache", userEmail: "test@example.com" }
  */
 router.post("/check", async (req, res) => {
   try {
-    const { symptoms } = req.body;
+    const { symptoms, userEmail } = req.body;
 
     if (!symptoms) {
       return res.status(400).json({ message: "Please provide symptoms" });
     }
 
     const completion = await client.chat.completions.create({
-      model: "openai/gpt-3.5-turbo", // use an available model (OpenRouter supports many)
+      model: "openai/gpt-3.5-turbo",
       messages: [
-  {
-    role: "system",
-    content: `
+        {
+          role: "system",
+          content: `
 You are Healthi AI.
 
 Return ONLY valid JSON.
@@ -66,10 +68,10 @@ Return exactly this structure:
   }
 }
 `
-  },
-  {
-    role: "user",
-    content: `
+        },
+        {
+          role: "user",
+          content: `
 Patient Symptoms:
 
 ${symptoms}
@@ -149,24 +151,49 @@ Rules:
 - Never return markdown.
 - Never return explanations outside JSON.
 `
-    
-  }
-],
+        }
+      ],
       max_tokens: 500,
     });
 
-    const result = JSON.parse(
-  completion.choices[0].message.content
-);
+    const contentText = completion.choices[0].message.content.trim();
+    const result = JSON.parse(contentText);
 
-return res.json(result);
+    // Format plain-text summary to store in MongoDB history
+    if (userEmail) {
+      const urgencyText = result.urgency?.points ? result.urgency.points.map(p => `• ${p}`).join('\n') : '';
+      const causesText = result.causes?.points ? result.causes.points.map(p => `• ${p}`).join('\n') : '';
+      const homeCareText = result.homeCare?.points ? result.homeCare.points.map(p => `• ${p}`).join('\n') : '';
+      const avoidText = result.avoid?.points ? result.avoid.points.map(p => `• ${p}`).join('\n') : '';
+      const emergencyText = result.emergency?.points ? result.emergency.points.map(p => `• ${p}`).join('\n') : '';
+      const specialistText = result.specialist ? `${result.specialist.name} (${result.specialist.reason})` : '';
+
+      const summaryLines = [
+        `Urgency & Action Plan:\n${urgencyText}`,
+        `Possible Causes:\n${causesText}`,
+        `Home Care:\n${homeCareText}`,
+        `Things to Avoid:\n${avoidText}`,
+        `Emergency Warning Signs:\n${emergencyText}`,
+        `Recommended Specialist:\n${specialistText}`
+      ];
+
+      const replyText = summaryLines.filter(line => !line.endsWith(':\n')).join('\n\n');
+
+      await SymptomHistory.create({
+        email: userEmail,
+        symptoms,
+        reply: replyText
+      });
+    }
+
+    return res.json(result);
   } catch (err) {
-    console.error(err.response ? err.response.data : err.message);
+    console.error(err);
     res.status(500).json({
       message: "Error checking symptoms",
-      error: err.response ? err.response.data : err.message,
+      error: err.message,
     });
   }
 });
 
-module.exports = router;
+export default router;

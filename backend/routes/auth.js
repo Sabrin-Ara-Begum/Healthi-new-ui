@@ -1,7 +1,7 @@
-const express = require("express");
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
-const User = require("../models/User");
+import express from "express";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import User from "../models/User.js";
 
 const router = express.Router();
 
@@ -12,7 +12,6 @@ router.post("/signup", async (req, res) => {
   const { name, email, password } = req.body;
 
   try {
-
     if (!name || !email || !password) {
       return res.status(400).json({ message: "All fields required" });
     }
@@ -41,16 +40,13 @@ router.post("/signup", async (req, res) => {
   }
 });
 
-
 /**
  * LOGIN
  */
 router.post("/login", async (req, res) => {
-
   const { email, password } = req.body;
 
   try {
-
     const user = await User.findOne({ email });
 
     if (!user) {
@@ -65,7 +61,7 @@ router.post("/login", async (req, res) => {
 
     const token = jwt.sign(
       { email: user.email },
-      "secret123",
+      process.env.JWT_SECRET || "secret123",
       { expiresIn: "1h" }
     );
 
@@ -73,6 +69,7 @@ router.post("/login", async (req, res) => {
       message: "Login successful",
       token,
       user: {
+        id: user._id,
         name: user.name,
         email: user.email
       }
@@ -82,7 +79,6 @@ router.post("/login", async (req, res) => {
     console.error(err);
     res.status(500).json({ message: "Server error" });
   }
-
 });
 
-module.exports = router;
+export default router;

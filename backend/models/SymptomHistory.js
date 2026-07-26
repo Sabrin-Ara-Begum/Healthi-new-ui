@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const symptomSchema = new mongoose.Schema({
   email: String,
@@ -10,4 +10,4 @@ const symptomSchema = new mongoose.Schema({
   }
 });
 
-module.exports = mongoose.model("SymptomHistory", symptomSchema);
+export default mongoose.model("SymptomHistory", symptomSchema);
