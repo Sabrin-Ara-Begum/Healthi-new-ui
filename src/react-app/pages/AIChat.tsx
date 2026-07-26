@@ -11,10 +11,10 @@ import {
 } from "@/react-app/api/chatApi";
 
 interface AIChatProps {
-  onNotificationClick: () => void;
+  onNotificationClick?: () => void;
 }
 
-export default function AIChat({ onNotificationClick }: AIChatProps) {
+export default function AIChat({}: AIChatProps) {
   const navigate = useNavigate();
   const { user, fetchNotifications } = useApp();
 

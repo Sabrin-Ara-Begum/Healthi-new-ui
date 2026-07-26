@@ -46,7 +46,6 @@ export default function MoodTracker({ onNotificationClick }: MoodTrackerProps) {
   const [moodNote, setMoodNote] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const [weeklyData, setWeeklyData] = useState<any[]>([]);
   const [historyNotes, setHistoryNotes] = useState<any[]>([]);
   const [stats, setStats] = useState<any>(null);
 
@@ -64,7 +63,6 @@ export default function MoodTracker({ onNotificationClick }: MoodTrackerProps) {
         getMoodHistory(user.email)
       ]);
       setStats(statsData);
-      setWeeklyData(statsData.weeklyOverview || []);
       setHistoryNotes(histData || []);
     } catch (err) {
       console.error(err);
