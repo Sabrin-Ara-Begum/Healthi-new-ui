@@ -6,7 +6,7 @@ import { API_BASE } from '../api/config';
 
 export default function Profile() {
   const navigate = useNavigate();
-  const { user, setUser } = useApp();
+  const { user, setUser, showToast } = useApp();
 
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -86,13 +86,10 @@ export default function Profile() {
   };
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      navigate("/auth");
-      return;
+    if (user?.email) {
+      fetchProfile();
+      fetchWellnessStats();
     }
-    fetchProfile();
-    fetchWellnessStats();
   }, [user?.email]);
 
   const handleSave = async () => {
@@ -121,14 +118,14 @@ export default function Profile() {
         const updated = await res.json();
         setUser(updated); // Sync context
         setIsEditing(false);
-        alert("Profile updated successfully!");
+        showToast("Profile updated successfully!", "success");
       } else {
         const errData = await res.json();
-        alert(errData.message || "Failed to update profile.");
+        showToast(errData.message || "Failed to update profile.", "error");
       }
     } catch (err) {
       console.error(err);
-      alert("Error occurred while saving profile.");
+      showToast("Error occurred while saving profile.", "error");
     } finally {
       setLoading(false);
     }
@@ -153,14 +150,14 @@ export default function Profile() {
         const data = await res.json();
         setProfileData(prev => ({ ...prev, avatar: data.avatarUrl }));
         setUser({ ...user, avatar: data.avatarUrl }); // Sync context
-        alert("Profile picture uploaded!");
+        showToast("Profile picture uploaded!", "success");
       } else {
         const errData = await res.json();
-        alert(errData.message || "Upload failed.");
+        showToast(errData.message || "Upload failed.", "error");
       }
     } catch (err) {
       console.error(err);
-      alert("Error uploading profile photo.");
+      showToast("Error uploading profile photo.", "error");
     } finally {
       setLoading(false);
     }
@@ -168,6 +165,7 @@ export default function Profile() {
 
   const handleLogout = () => {
     setUser(null);
+    showToast("Successfully Logged Out", "success");
     navigate("/auth");
   };
 

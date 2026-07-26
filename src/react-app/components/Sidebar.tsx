@@ -61,7 +61,7 @@ const FAQS: FAQSection[] = [
 export default function Sidebar() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { sidebarOpen, setSidebarOpen, user, setUser, theme, toggleTheme } = useApp();
+  const { sidebarOpen, setSidebarOpen, user, setUser, theme, toggleTheme, showToast } = useApp();
 
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [activeFAQSection, setActiveFAQSection] = useState<number | null>(null);
@@ -107,6 +107,7 @@ export default function Sidebar() {
     setUser(null);
     setSettingsOpen(false);
     handleLinkClick();
+    showToast("Successfully Logged Out", "success");
     navigate("/auth");
   };
 

@@ -1,4 +1,5 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
+import { CheckCircle2, AlertCircle, X } from "lucide-react";
 import { API_BASE } from "../api/config";
 
 interface UserType {
@@ -43,6 +44,7 @@ interface AppContextType {
   markNotificationRead: (id: string) => Promise<void>;
   clearAllNotifications: () => Promise<void>;
   unreadCount: number;
+  showToast: (message: string, type?: "success" | "error") => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -52,6 +54,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<"light" | "dark">("light");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [notifications, setNotifications] = useState<NotificationType[]>([]);
+  
+  // Toast state
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error"; visible: boolean }>({
+    message: "",
+    type: "success",
+    visible: false
+  });
 
   // Load initial user and theme preference
   useEffect(() => {
@@ -179,6 +188,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
+  const showToast = useCallback((message: string, type: "success" | "error" = "success") => {
+    setToast({ message, type, visible: true });
+    setTimeout(() => {
+      setToast(prev => ({ ...prev, visible: false }));
+    }, 3500);
+  }, []);
+
   return (
     <AppContext.Provider
       value={{
@@ -194,10 +210,38 @@ export function AppProvider({ children }: { children: ReactNode }) {
         fetchNotifications,
         markNotificationRead,
         clearAllNotifications,
-        unreadCount
+        unreadCount,
+        showToast
       }}
     >
       {children}
+      {/* Toast Overlay */}
+      {toast.visible && (
+        <div className="fixed bottom-6 right-6 z-[100] animate-in slide-in-from-bottom-5 fade-in duration-300">
+          <div className={`flex items-center gap-3 px-4 py-3 rounded-xl shadow-xl border ${
+            toast.type === "success" 
+              ? "bg-white dark:bg-gray-800 border-green-200 dark:border-green-900/50" 
+              : "bg-white dark:bg-gray-800 border-red-200 dark:border-red-900/50"
+          }`}>
+            {toast.type === "success" ? (
+              <div className="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center flex-shrink-0">
+                <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400" />
+              </div>
+            ) : (
+              <div className="w-8 h-8 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center flex-shrink-0">
+                <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
+              </div>
+            )}
+            <p className="text-sm font-semibold text-gray-800 dark:text-gray-100 pr-4">{toast.message}</p>
+            <button 
+              onClick={() => setToast(prev => ({ ...prev, visible: false }))}
+              className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors"
+            >
+              <X className="w-4 h-4 text-gray-400" />
+            </button>
+          </div>
+        </div>
+      )}
     </AppContext.Provider>
   );
 }

@@ -2,8 +2,10 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Mail, Lock, User, ArrowLeft } from 'lucide-react';
 import { loginUser, signupUser } from '../api/authApi';
+import { useApp } from '@/react-app/lib/AppContext';
 
 export default function Auth() {
+  const { setUser, showToast } = useApp();
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -19,26 +21,29 @@ export default function Auth() {
 
         if (res.token) {
           localStorage.setItem('token', res.token);
-          localStorage.setItem('user', JSON.stringify(res.user));
-          alert('Login successful');
-          navigate('/profile');
+          // Don't just set localStorage, also set the context to instantly reflect login state
+          setUser(res.user); 
+          showToast('Successfully Logged In', 'success');
+          navigate('/');
         } else {
-          alert(res.message || 'Login failed');
+          showToast(res.message || 'Login failed', 'error');
         }
       } else {
         const res = await signupUser(name, email, password);
-        alert(res.message);
 
         if (res.message === 'Signup successful') {
+          showToast('Account Created Successfully', 'success');
           setIsLogin(true);
           setName('');
           setEmail('');
           setPassword('');
+        } else {
+          showToast(res.message || 'Signup failed', 'error');
         }
       }
     } catch (error) {
       console.log(error);
-      alert('Something went wrong');
+      showToast('Something went wrong', 'error');
     }
   };
 
