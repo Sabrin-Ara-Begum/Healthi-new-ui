@@ -11,19 +11,17 @@ import Profile from "@/react-app/pages/Profile";
 import SymptomChecker from "@/react-app/pages/SymptomChecker";
 import FindDoctor from "./pages/FindDoctor";
 import TabletIdentifier from "./pages/TabletIdentifier";
-import { SidebarProvider } from "@/react-app/lib/SidebarContext";
+import AIChat from "./pages/AIChat";
+import { AppProvider } from "@/react-app/lib/AppContext";
 
 export default function App() {
   const [notificationOpen, setNotificationOpen] = useState(false);
 
   return (
     <Router>
-      <SidebarProvider>
+      <AppProvider>
         <div
-          className="flex h-screen overflow-hidden"
-          style={{
-            background: "linear-gradient(135deg, #F3E8FF 0%, #DCD2FD 50%, #B9A9FB 100%)",
-          }}
+          className="flex h-screen overflow-hidden bg-gradient-to-br from-[#F3E8FF] via-[#DCD2FD] to-[#B9A9FB] dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 transition-colors duration-300"
         >
           <Sidebar />
         <div className="flex-1 flex flex-col overflow-hidden">
@@ -34,7 +32,7 @@ export default function App() {
             />
             <Route
               path="/chat"
-              element={<ComingSoon title="AI Chat" onNotificationClick={() => setNotificationOpen(true)} />}
+              element={<AIChat onNotificationClick={() => setNotificationOpen(true)} />}
             />
             <Route
               path="/reports"
@@ -76,7 +74,7 @@ export default function App() {
           onClose={() => setNotificationOpen(false)}
         />
       </div>
-      </SidebarProvider>
+      </AppProvider>
     </Router>
   );
 }
@@ -96,9 +94,9 @@ function ComingSoon({
           <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-purple-200 to-pink-200 flex items-center justify-center">
             <div className="text-4xl">✨</div>
           </div>
-          <h1 className="text-4xl font-bold text-gray-800 mb-4">{title}</h1>
-          <p className="text-xl text-gray-600">Coming soon...</p>
-          <p className="text-sm text-purple-600 mt-2">
+          <h1 className="text-4xl font-bold text-gray-800 dark:text-white mb-4">{title}</h1>
+          <p className="text-xl text-gray-600 dark:text-gray-300">Coming soon...</p>
+          <p className="text-sm text-purple-600 dark:text-purple-400 mt-2">
             We're working on something amazing!
           </p>
         </div>

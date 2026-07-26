@@ -192,20 +192,20 @@ export default function TabletIdentifier({ onNotificationClick }: Props) {
     <>
       <Header onNotificationClick={onNotificationClick} />
 
-      <div className="flex-1 overflow-auto bg-gradient-to-br from-purple-50 via-white to-blue-50">
+      <div className="flex-1 overflow-auto bg-gradient-to-br from-purple-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 transition-colors duration-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-8 py-6 sm:py-10">
           {/* Hero Section */}
           <div className="text-center mb-10">
-            <div className="inline-flex items-center gap-3 bg-purple-100 px-5 py-2 rounded-full">
-              <Pill className="w-5 h-5 text-purple-600 flex-shrink-0" />
-              <span className="font-semibold text-purple-700 text-sm sm:text-base">
+            <div className="inline-flex items-center gap-3 bg-purple-100 dark:bg-purple-900/30 px-5 py-2 rounded-full">
+              <Pill className="w-5 h-5 text-purple-600 dark:text-purple-400 flex-shrink-0" />
+              <span className="font-semibold text-purple-700 dark:text-purple-300 text-sm sm:text-base">
                 AI Powered Medicine Scanner
               </span>
             </div>
-            <h1 className="mt-6 text-3xl sm:text-5xl font-black text-gray-800 tracking-tight leading-tight">
+            <h1 className="mt-6 text-3xl sm:text-5xl font-black text-gray-800 dark:text-white tracking-tight leading-tight">
               Identify Medicines Instantly
             </h1>
-            <p className="mt-4 text-base sm:text-xl text-gray-500 max-w-2xl mx-auto leading-relaxed">
+            <p className="mt-4 text-base sm:text-xl text-gray-500 dark:text-gray-400 max-w-2xl mx-auto leading-relaxed">
               Upload or capture a medicine image. Our AI identifies the tablet and details its composition, uses, dosage, and side effects.
             </p>
           </div>
@@ -226,15 +226,15 @@ export default function TabletIdentifier({ onNotificationClick }: Props) {
               }}
               className={`transition-all duration-300 rounded-3xl lg:rounded-[40px] border-2 border-dashed p-6 sm:p-14 shadow-xl ${
                 dragging
-                  ? "border-purple-500 bg-purple-50 scale-[1.02]"
-                  : "border-purple-200 bg-white"
+                  ? "border-purple-500 bg-purple-50 dark:bg-purple-900/20 scale-[1.02]"
+                  : "border-purple-200 dark:border-gray-700 bg-white dark:bg-gray-800"
               }`}
             >
               <div className="flex flex-col items-center">
                 <div className="w-24 h-24 sm:w-36 sm:h-36 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-xl">
                   <ScanSearch className="w-12 h-12 sm:w-20 sm:h-20 text-white" />
                 </div>
-                <h2 className="text-xl sm:text-3xl font-bold mt-8 sm:mt-10 text-gray-800 text-center">
+                <h2 className="text-xl sm:text-3xl font-bold mt-8 sm:mt-10 text-gray-800 dark:text-white text-center">
                   Drag & Drop Medicine Image
                 </h2>
                 <p className="text-gray-400 mt-2 text-center text-sm sm:text-base max-w-md">
@@ -274,7 +274,7 @@ export default function TabletIdentifier({ onNotificationClick }: Props) {
           {preview && !result && (
             <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
               {/* LEFT */}
-              <div className="bg-white rounded-3xl p-4 sm:p-6 shadow-xl border border-purple-100">
+              <div className="bg-white dark:bg-gray-800 rounded-3xl p-4 sm:p-6 shadow-xl border border-purple-100 dark:border-gray-700">
                 <img
                   src={preview}
                   alt="Medicine preview"
@@ -283,19 +283,19 @@ export default function TabletIdentifier({ onNotificationClick }: Props) {
               </div>
 
               {/* RIGHT */}
-              <div className="bg-white rounded-3xl p-6 sm:p-8 border border-purple-100 shadow-xl flex flex-col justify-between h-full">
+              <div className="bg-white dark:bg-gray-800 rounded-3xl p-6 sm:p-8 border border-purple-100 dark:border-gray-700 shadow-xl flex flex-col justify-between h-full">
                 <div>
-                  <div className="inline-flex items-center gap-2 bg-green-100 px-4 py-2 rounded-full">
-                    <CheckCircle2 className="text-green-600 w-5 h-5 flex-shrink-0" />
-                    <span className="font-semibold text-green-700 text-sm">Image Ready</span>
+                  <div className="inline-flex items-center gap-2 bg-green-100 dark:bg-green-900/30 px-4 py-2 rounded-full">
+                    <CheckCircle2 className="text-green-600 dark:text-green-400 w-5 h-5 flex-shrink-0" />
+                    <span className="font-semibold text-green-700 dark:text-green-400 text-sm">Image Ready</span>
                   </div>
-                  <h2 className="text-2xl sm:text-4xl font-black mt-4 sm:mt-6 text-gray-800">
+                  <h2 className="text-2xl sm:text-4xl font-black mt-4 sm:mt-6 text-gray-800 dark:text-white">
                     Ready for AI Analysis
                   </h2>
-                  <p className="mt-4 text-gray-500 leading-relaxed text-sm sm:text-base">
+                  <p className="mt-4 text-gray-500 dark:text-gray-400 leading-relaxed text-sm sm:text-base">
                     Our AI scanner will examine details from this image to identify the medicine strip, tablet print, shape, and label:
                   </p>
-                  <ul className="mt-4 space-y-2 text-gray-600 text-sm sm:text-base font-medium">
+                  <ul className="mt-4 space-y-2 text-gray-600 dark:text-gray-300 text-sm sm:text-base font-medium">
                     <li className="flex items-center gap-2">✔ Active Ingredient & Composition</li>
                     <li className="flex items-center gap-2">✔ Intended Health Uses</li>
                     <li className="flex items-center gap-2">✔ Basic Dosage & Warnings</li>
@@ -318,7 +318,7 @@ export default function TabletIdentifier({ onNotificationClick }: Props) {
                   </button>
                   <button
                     onClick={removeImage}
-                    className="border-2 border-gray-300 text-gray-600 rounded-xl sm:rounded-2xl py-3 hover:bg-gray-50 flex justify-center items-center gap-3 transition font-semibold"
+                    className="border-2 border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 rounded-xl sm:rounded-2xl py-3 hover:bg-gray-50 dark:hover:bg-gray-700 flex justify-center items-center gap-3 transition font-semibold"
                   >
                     <Trash2 className="w-5 h-5 flex-shrink-0" />
                     Remove Image
@@ -331,23 +331,23 @@ export default function TabletIdentifier({ onNotificationClick }: Props) {
           {/* ================= RESULT CARD ================= */}
           {result && (
             <div className="mt-10">
-              <div className="bg-white rounded-3xl lg:rounded-[40px] shadow-2xl p-6 sm:p-10 border border-purple-100">
+              <div className="bg-white dark:bg-gray-800 rounded-3xl lg:rounded-[40px] shadow-2xl p-6 sm:p-10 border border-purple-100 dark:border-gray-700">
                 <div className="flex justify-between items-center flex-wrap gap-6">
                   <div className="flex items-center gap-4">
-                    <div className="w-14 h-14 rounded-2xl bg-purple-100 flex items-center justify-center flex-shrink-0">
-                      <Pill className="w-8 h-8 text-purple-600" />
+                    <div className="w-14 h-14 rounded-2xl bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center flex-shrink-0">
+                      <Pill className="w-8 h-8 text-purple-600 dark:text-purple-400" />
                     </div>
                     <div>
-                      <h2 className="text-2xl sm:text-4xl font-black text-gray-800">
+                      <h2 className="text-2xl sm:text-4xl font-black text-gray-800 dark:text-white">
                         {result.medicine}
                       </h2>
-                      <p className="text-gray-500 mt-1 font-medium text-sm sm:text-base">
+                      <p className="text-gray-500 dark:text-gray-400 mt-1 font-medium text-sm sm:text-base">
                         {result.generic}
                       </p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-3xl sm:text-5xl font-black text-purple-600">
+                    <div className="text-3xl sm:text-5xl font-black text-purple-600 dark:text-purple-400">
                       {result.confidence}%
                     </div>
                     <p className="text-gray-400 text-xs sm:text-sm font-semibold uppercase tracking-wider">
@@ -356,20 +356,20 @@ export default function TabletIdentifier({ onNotificationClick }: Props) {
                   </div>
                 </div>
 
-                <hr className="my-8 sm:my-10 border-gray-100" />
+                <hr className="my-8 sm:my-10 border-gray-100 dark:border-gray-700" />
 
                 <div className="grid lg:grid-cols-2 gap-6 sm:gap-8">
                   {/* USES */}
-                  <div className="rounded-2xl sm:rounded-3xl bg-green-50/70 p-5 sm:p-6 border border-green-100">
-                    <h3 className="text-xl sm:text-2xl font-bold mb-4 text-green-800 flex items-center gap-2">
+                  <div className="rounded-2xl sm:rounded-3xl bg-green-50/70 dark:bg-green-900/10 p-5 sm:p-6 border border-green-100 dark:border-green-900/30">
+                    <h3 className="text-xl sm:text-2xl font-bold mb-4 text-green-800 dark:text-green-400 flex items-center gap-2">
                       ✅ Uses
                     </h3>
                     <div className="space-y-3">
                       {result.uses && result.uses.length > 0 ? (
                         result.uses.map((item, index) => (
                           <div key={index} className="flex items-start gap-3">
-                            <CheckCircle2 className="text-green-600 w-5 h-5 mt-0.5 flex-shrink-0" />
-                            <span className="text-gray-700 text-sm sm:text-base">{item}</span>
+                            <CheckCircle2 className="text-green-600 dark:text-green-500 w-5 h-5 mt-0.5 flex-shrink-0" />
+                            <span className="text-gray-700 dark:text-gray-300 text-sm sm:text-base">{item}</span>
                           </div>
                         ))
                       ) : (
@@ -379,8 +379,8 @@ export default function TabletIdentifier({ onNotificationClick }: Props) {
                   </div>
 
                   {/* SIDE EFFECTS */}
-                  <div className="rounded-2xl sm:rounded-3xl bg-red-50/70 p-5 sm:p-6 border border-red-100">
-                    <h3 className="text-xl sm:text-2xl font-bold mb-4 text-red-800 flex items-center gap-2">
+                  <div className="rounded-2xl sm:rounded-3xl bg-red-50/70 dark:bg-red-900/10 p-5 sm:p-6 border border-red-100 dark:border-red-900/30">
+                    <h3 className="text-xl sm:text-2xl font-bold mb-4 text-red-800 dark:text-red-400 flex items-center gap-2">
                       ⚠️ Side Effects
                     </h3>
                     <div className="space-y-3">
@@ -388,7 +388,7 @@ export default function TabletIdentifier({ onNotificationClick }: Props) {
                         result.sideEffects.map((item, index) => (
                           <div key={index} className="flex items-start gap-3">
                             <AlertTriangle className="text-red-500 w-5 h-5 mt-0.5 flex-shrink-0" />
-                            <span className="text-gray-700 text-sm sm:text-base">{item}</span>
+                            <span className="text-gray-700 dark:text-gray-300 text-sm sm:text-base">{item}</span>
                           </div>
                         ))
                       ) : (
@@ -398,26 +398,26 @@ export default function TabletIdentifier({ onNotificationClick }: Props) {
                   </div>
 
                   {/* DOSAGE */}
-                  <div className="rounded-2xl sm:rounded-3xl bg-blue-50/70 p-5 sm:p-6 border border-blue-100">
-                    <h3 className="text-xl sm:text-2xl font-bold mb-4 text-blue-800 flex items-center gap-2">
+                  <div className="rounded-2xl sm:rounded-3xl bg-blue-50/70 dark:bg-blue-900/10 p-5 sm:p-6 border border-blue-100 dark:border-blue-900/30">
+                    <h3 className="text-xl sm:text-2xl font-bold mb-4 text-blue-800 dark:text-blue-400 flex items-center gap-2">
                       💊 Dosage
                     </h3>
-                    <p className="leading-relaxed text-gray-700 text-sm sm:text-base">
+                    <p className="leading-relaxed text-gray-700 dark:text-gray-300 text-sm sm:text-base">
                       {result.dosage || "Consult your physician for correct dosage instructions."}
                     </p>
                   </div>
 
                   {/* WARNINGS */}
-                  <div className="rounded-2xl sm:rounded-3xl bg-yellow-50/70 p-5 sm:p-6 border border-yellow-100">
-                    <h3 className="text-xl sm:text-2xl font-bold mb-4 text-yellow-800 flex items-center gap-2">
+                  <div className="rounded-2xl sm:rounded-3xl bg-yellow-50/70 dark:bg-yellow-900/10 p-5 sm:p-6 border border-yellow-100 dark:border-yellow-900/30">
+                    <h3 className="text-xl sm:text-2xl font-bold mb-4 text-yellow-800 dark:text-yellow-400 flex items-center gap-2">
                       🛡️ Warnings
                     </h3>
                     <div className="space-y-3">
                       {result.warnings && result.warnings.length > 0 ? (
                         result.warnings.map((item, index) => (
                           <div key={index} className="flex items-start gap-3">
-                            <ShieldAlert className="text-yellow-600 w-5 h-5 mt-0.5 flex-shrink-0" />
-                            <span className="text-gray-700 text-sm sm:text-base">{item}</span>
+                            <ShieldAlert className="text-yellow-600 dark:text-yellow-500 w-5 h-5 mt-0.5 flex-shrink-0" />
+                            <span className="text-gray-700 dark:text-gray-300 text-sm sm:text-base">{item}</span>
                           </div>
                         ))
                       ) : (
@@ -427,11 +427,11 @@ export default function TabletIdentifier({ onNotificationClick }: Props) {
                   </div>
                 </div>
 
-                <div className="mt-8 rounded-2xl sm:rounded-3xl bg-purple-50/70 p-5 sm:p-6 border border-purple-100">
-                  <h3 className="text-lg sm:text-xl font-bold mb-2 text-purple-900">
+                <div className="mt-8 rounded-2xl sm:rounded-3xl bg-purple-50/70 dark:bg-purple-900/10 p-5 sm:p-6 border border-purple-100 dark:border-purple-900/30">
+                  <h3 className="text-lg sm:text-xl font-bold mb-2 text-purple-900 dark:text-purple-300">
                     Composition
                   </h3>
-                  <p className="text-gray-700 text-sm sm:text-base">
+                  <p className="text-gray-700 dark:text-gray-300 text-sm sm:text-base">
                     {result.composition || "Unavailable"}
                   </p>
                 </div>
@@ -469,14 +469,14 @@ export default function TabletIdentifier({ onNotificationClick }: Props) {
 
           {/* ================= RECENT SCANS HISTORY ================= */}
           {userEmail && (
-            <div className="mt-12 bg-white rounded-3xl p-6 sm:p-8 border border-purple-100 shadow-xl">
+            <div className="mt-12 bg-white dark:bg-gray-800 rounded-3xl p-6 sm:p-8 border border-purple-100 dark:border-gray-700 shadow-xl">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                  <h2 className="text-2xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
                     <Clock className="w-6 h-6 text-purple-500" />
                     Recent Scans
                   </h2>
-                  <p className="text-gray-500 text-sm mt-1">
+                  <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">
                     Your tablet scan history. Click on a scan to view details.
                   </p>
                 </div>
@@ -490,7 +490,7 @@ export default function TabletIdentifier({ onNotificationClick }: Props) {
                       placeholder="Search history..."
                       value={historySearch}
                       onChange={(e) => setHistorySearch(e.target.value)}
-                      className="w-full pl-9 pr-4 py-2 border border-purple-100 rounded-xl bg-purple-50/30 focus:outline-none focus:ring-2 focus:ring-purple-300 text-sm"
+                      className="w-full pl-9 pr-4 py-2 border border-purple-100 dark:border-gray-700 rounded-xl bg-purple-50/30 dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-300 text-sm dark:text-white"
                     />
                   </div>
                   <button
@@ -518,17 +518,17 @@ export default function TabletIdentifier({ onNotificationClick }: Props) {
                     <div
                       key={log._id}
                       onClick={() => handleSelectLog(log)}
-                      className="group flex items-center justify-between p-4 border border-purple-50 hover:border-purple-200 hover:bg-purple-50/30 rounded-2xl cursor-pointer transition-all"
+                      className="group flex items-center justify-between p-4 border border-purple-50 dark:border-gray-700 hover:border-purple-200 dark:hover:border-purple-500 hover:bg-purple-50/30 dark:hover:bg-gray-700/50 rounded-2xl cursor-pointer transition-all"
                     >
                       <div className="flex items-center gap-3 min-w-0">
-                        <div className="w-10 h-10 rounded-xl bg-purple-100 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
-                          <Pill className="w-5 h-5 text-purple-600" />
+                        <div className="w-10 h-10 rounded-xl bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+                          <Pill className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                         </div>
                         <div className="min-w-0">
-                          <h4 className="font-bold text-gray-800 text-sm sm:text-base truncate group-hover:text-purple-600 transition-colors">
+                          <h4 className="font-bold text-gray-800 dark:text-gray-200 text-sm sm:text-base truncate group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
                             {log.medicine}
                           </h4>
-                          <p className="text-gray-500 text-xs sm:text-sm truncate">
+                          <p className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm truncate">
                             {log.generic} {log.composition ? `• ${log.composition}` : ""}
                           </p>
                         </div>
@@ -584,8 +584,8 @@ export default function TabletIdentifier({ onNotificationClick }: Props) {
           {/* Camera Capture Modal overlay */}
           {cameraOpen && (
             <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-              <div className="bg-white rounded-3xl p-6 sm:p-8 w-full max-w-2xl shadow-2xl relative">
-                <h2 className="text-xl sm:text-3xl font-bold text-center mb-6 text-gray-800">
+              <div className="bg-white dark:bg-gray-800 rounded-3xl p-6 sm:p-8 w-full max-w-2xl shadow-2xl relative">
+                <h2 className="text-xl sm:text-3xl font-bold text-center mb-6 text-gray-800 dark:text-white">
                   Capture Medicine
                 </h2>
                 <div className="relative overflow-hidden rounded-2xl bg-black aspect-video flex items-center justify-center">

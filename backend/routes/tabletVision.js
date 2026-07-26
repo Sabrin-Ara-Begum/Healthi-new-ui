@@ -4,6 +4,7 @@ import fs from "fs";
 import path from "path";
 import { GoogleGenAI } from "@google/genai";
 import TabletLog from "../models/TabletLog.js";
+import { createNotification } from "./notifications.js";
 
 const router = express.Router();
 
@@ -72,7 +73,7 @@ router.post("/identify", (req, res, next) => {
     };
 
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: process.env.GEMINI_MODEL || "gemini-1.5-flash",
       contents: [
         {
           role: "user",
@@ -128,8 +129,14 @@ Rules:
       }
     }
 
-    // Clean up file
-    fs.unlinkSync(req.file.path);
+    // Clean up file safely
+    try {
+      if (req.file && fs.existsSync(req.file.path)) {
+        fs.unlinkSync(req.file.path);
+      }
+    } catch (cleanupErr) {
+      console.error("File cleanup error after success:", cleanupErr);
+    }
 
     // Save to database if email is provided
     const email = req.body.email;
@@ -145,23 +152,31 @@ Rules:
         warnings: result.warnings || [],
         confidence: result.confidence || 0
       });
+
+      // Trigger notification
+      await createNotification(
+        email,
+        "Medicine Identified",
+        `Identified ${result.medicine || "a medicine"} successfully.`,
+        "success"
+      );
     }
 
     res.json(result);
   } catch (err) {
     console.error("Gemini Error:", err);
 
-    if (req.file && fs.existsSync(req.file.path)) {
-      try {
+    try {
+      if (req.file && fs.existsSync(req.file.path)) {
         fs.unlinkSync(req.file.path);
-      } catch (unlinkErr) {
-        console.error("File deletion error:", unlinkErr);
       }
+    } catch (unlinkErr) {
+      console.error("File deletion error on failure:", unlinkErr);
     }
 
     res.status(500).json({
       message: "Medicine identification failed.",
-      error: err.message,
+      error: err.message || "Unknown AI error",
     });
   }
 });

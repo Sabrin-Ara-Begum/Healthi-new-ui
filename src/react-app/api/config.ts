@@ -1,10 +1,10 @@
 const getApiBaseUrl = (): string => {
-  if (typeof window !== "undefined") {
-    const hostname = window.location.hostname;
-    if (hostname === "localhost" || hostname === "127.0.0.1") {
-      return "http://localhost:5001";
-    }
+  // Use Vite environment variables primarily
+  if (import.meta.env.VITE_API_BASE_URL) {
+    return import.meta.env.VITE_API_BASE_URL;
   }
+  
+  // Fallback production URL if environment variable is missing
   return "https://healthi-ai-bppm.onrender.com";
 };
 

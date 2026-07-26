@@ -14,10 +14,10 @@ export default function Home({ onNotificationClick }: HomeProps) {
       <div className="px-8 py-8">
         {/* Greeting */}
         <div className="mb-10">
-          <h1 className="text-4xl font-bold text-gray-800 mb-2">
+          <h1 className="text-4xl font-bold text-gray-800 dark:text-white mb-2">
             Welcome back! 👋
           </h1>
-          <p className="text-xl text-gray-600">How can I assist you today?</p>
+          <p className="text-xl text-gray-600 dark:text-gray-300">How can I assist you today?</p>
         </div>
 
         {/* Feature Cards Grid */}

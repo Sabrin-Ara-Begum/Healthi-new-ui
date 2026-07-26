@@ -1,54 +1,187 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router';
-import { ArrowLeft, Mail, Phone, MapPin, Calendar, Edit2, LogOut } from 'lucide-react';
+import { ArrowLeft, Edit2, LogOut, Upload, User, ShieldAlert, Award } from 'lucide-react';
+import { useApp } from '@/react-app/lib/AppContext';
+import { API_BASE } from '../api/config';
 
 export default function Profile() {
-
   const navigate = useNavigate();
-  const [isEditing, setIsEditing] = useState(false);
+  const { user, setUser } = useApp();
 
-  const [userData, setUserData] = useState({
+  const [isEditing, setIsEditing] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Profile data states
+  const [profileData, setProfileData] = useState({
     name: '',
     email: '',
-    phone: '+1 (555) 123-4567',
-    location: 'San Francisco, CA',
-    joinDate: 'January 2024',
-    avatar: 'https://i.pravatar.cc/150?img=47'
+    phone: '',
+    age: '',
+    gender: '',
+    bloodGroup: '',
+    allergies: '',
+    medicalConditions: '',
+    emergencyContact: '',
+    address: '',
+    location: '',
+    joinDate: '',
+    avatar: ''
   });
 
-  useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    const token = localStorage.getItem("token");
+  // Wellness statistics
+  const [stats, setStats] = useState({
+    moodEntries: 0,
+    streak: 0,
+    wellnessScore: 0
+  });
 
+  // Fetch full profile from backend
+  const fetchProfile = async () => {
+    if (!user?.email) return;
+    try {
+      setLoading(true);
+      const res = await fetch(`${API_BASE}/api/auth/profile?email=${encodeURIComponent(user.email)}`);
+      if (res.ok) {
+        const data = await res.json();
+        setProfileData({
+          name: data.name || '',
+          email: data.email || '',
+          phone: data.phone || '',
+          age: data.age ? String(data.age) : '',
+          gender: data.gender || '',
+          bloodGroup: data.bloodGroup || '',
+          allergies: data.allergies || '',
+          medicalConditions: data.medicalConditions || '',
+          emergencyContact: data.emergencyContact || '',
+          address: data.address || '',
+          location: data.location || '',
+          joinDate: data.createdAt ? new Date(data.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : 'N/A',
+          avatar: data.avatar || ''
+        });
+      }
+    } catch (err) {
+      console.error("Failed to load profile details:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch mood wellness stats from backend
+  const fetchWellnessStats = async () => {
+    if (!user?.email) return;
+    try {
+      const res = await fetch(`${API_BASE}/api/mood/stats?email=${encodeURIComponent(user.email)}`);
+      if (res.ok) {
+        const data = await res.json();
+        setStats({
+          moodEntries: data.totalLogs || 0,
+          streak: data.streak || 0,
+          wellnessScore: data.wellnessScore || 0
+        });
+      }
+    } catch (err) {
+      console.error("Failed to fetch wellness stats:", err);
+    }
+  };
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
     if (!token) {
       navigate("/auth");
       return;
     }
+    fetchProfile();
+    fetchWellnessStats();
+  }, [user?.email]);
 
-    if (storedUser) {
-      const user = JSON.parse(storedUser);
-      setUserData((prev) => ({
-        ...prev,
-        name: user.name,
-        email: user.email
-      }));
+  const handleSave = async () => {
+    if (!user?.email) return;
+    try {
+      setLoading(true);
+      const res = await fetch(`${API_BASE}/api/auth/profile`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: user.email,
+          name: profileData.name,
+          phone: profileData.phone,
+          age: profileData.age,
+          gender: profileData.gender,
+          bloodGroup: profileData.bloodGroup,
+          allergies: profileData.allergies,
+          medicalConditions: profileData.medicalConditions,
+          emergencyContact: profileData.emergencyContact,
+          address: profileData.address,
+          location: profileData.location
+        })
+      });
+
+      if (res.ok) {
+        const updated = await res.json();
+        setUser(updated); // Sync context
+        setIsEditing(false);
+        alert("Profile updated successfully!");
+      } else {
+        const errData = await res.json();
+        alert(errData.message || "Failed to update profile.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error occurred while saving profile.");
+    } finally {
+      setLoading(false);
     }
-  }, [navigate]);
+  };
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user?.email) return;
+
+    const formData = new FormData();
+    formData.append("avatar", file);
+    formData.append("email", user.email);
+
+    try {
+      setLoading(true);
+      const res = await fetch(`${API_BASE}/api/auth/profile/avatar`, {
+        method: "POST",
+        body: formData
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setProfileData(prev => ({ ...prev, avatar: data.avatarUrl }));
+        setUser({ ...user, avatar: data.avatarUrl }); // Sync context
+        alert("Profile picture uploaded!");
+      } else {
+        const errData = await res.json();
+        alert(errData.message || "Upload failed.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error uploading profile photo.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    setUser(null);
     navigate("/auth");
   };
 
-  return (
-    <div className="flex-1 overflow-auto">
+  const avatarUrlResolved = profileData.avatar
+    ? (profileData.avatar.startsWith("http") ? profileData.avatar : `${API_BASE}${profileData.avatar}`)
+    : "";
 
-      {/* Header */}
-      <div className="bg-white/60 backdrop-blur-sm border-b border-purple-200/30 px-8 py-4">
+  return (
+    <div className="flex-1 overflow-auto bg-gradient-to-br from-purple-50 via-white to-blue-50 dark:from-gray-955 dark:via-gray-900 dark:to-purple-950/20 text-gray-800 dark:text-gray-100 transition-colors duration-300">
+      {/* Header with Back Button */}
+      <div className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm border-b border-[#DCD2FD]/30 dark:border-gray-800 px-6 sm:px-8 py-4">
         <button
           onClick={() => navigate(-1)}
-          className="flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors"
+          className="flex items-center gap-2 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white transition-colors font-medium"
         >
           <ArrowLeft className="w-5 h-5" />
           <span>Back</span>
@@ -56,195 +189,288 @@ export default function Profile() {
       </div>
 
       {/* Main Content */}
-      <div className="px-8 py-8 max-w-4xl mx-auto">
-        <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 border border-purple-200/50 shadow-lg">
-
+      <div className="px-4 sm:px-8 py-8 max-w-4xl mx-auto">
+        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-3xl p-6 sm:p-8 border border-[#DCD2FD]/40 dark:border-gray-700 shadow-xl">
+          
           {/* Profile Header */}
-          <div className="flex items-start justify-between mb-8">
-            <div className="flex items-center gap-6">
-              <div className="relative">
-                <img
-                  src={userData.avatar}
-                  alt={userData.name}
-                  className="w-24 h-24 rounded-full border-4 border-purple-200/50"
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 border-b border-gray-100 dark:border-gray-700 pb-6">
+            <div className="flex flex-col sm:flex-row items-center gap-6 text-center sm:text-left">
+              <div className="relative group">
+                <div className="w-24 h-24 rounded-full bg-gradient-to-br from-[#B9A9FB] to-[#FFB7C5] flex items-center justify-center border-4 border-purple-200/50 dark:border-gray-700 overflow-hidden shadow-md">
+                  {avatarUrlResolved ? (
+                    <img src={avatarUrlResolved} alt="Profile" className="w-full h-full object-cover" />
+                  ) : (
+                    <User className="w-12 h-12 text-white" />
+                  )}
+                </div>
+                {/* Upload Hover Overlay */}
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer"
+                  aria-label="Upload profile photo"
+                >
+                  <Upload className="w-6 h-6 text-white" />
+                </button>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleAvatarUpload}
+                  accept="image/*"
+                  hidden
                 />
-                <div className="absolute bottom-0 right-0 w-6 h-6 bg-green-400 border-2 border-white rounded-full"></div>
               </div>
 
               <div>
-                <h1 className="text-3xl font-bold text-gray-800 mb-1">
-                  {userData.name}
+                <h1 className="text-3xl font-black text-gray-800 dark:text-white tracking-tight">
+                  {profileData.name || "Guest User"}
                 </h1>
-                <p className="text-gray-600">Member since {userData.joinDate}</p>
+                <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">
+                  Member since {profileData.joinDate || "N/A"}
+                </p>
               </div>
             </div>
 
-            <div className="flex gap-2">
-
-              <button
-                onClick={() => setIsEditing(!isEditing)}
-                className="px-4 py-2 bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-xl font-medium transition-colors flex items-center gap-2"
-              >
-                <Edit2 className="w-4 h-4" />
-                {isEditing ? 'Cancel' : 'Edit Profile'}
-              </button>
-
+            <div className="flex gap-3 justify-center">
+              {isEditing ? (
+                <>
+                  <button
+                    onClick={handleSave}
+                    disabled={loading}
+                    className="px-5 py-2.5 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-bold hover:shadow-lg transition disabled:opacity-50 text-sm"
+                  >
+                    {loading ? "Saving..." : "Save Changes"}
+                  </button>
+                  <button
+                    onClick={() => {
+                      setIsEditing(false);
+                      fetchProfile(); // Reset fields
+                    }}
+                    className="px-5 py-2.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-650 text-gray-700 dark:text-gray-200 rounded-xl font-semibold transition text-sm"
+                  >
+                    Cancel
+                  </button>
+                </>
+              ) : (
+                <button
+                  onClick={() => setIsEditing(true)}
+                  className="px-5 py-2.5 bg-purple-100 dark:bg-purple-950/40 hover:bg-purple-200 dark:hover:bg-purple-900/60 text-purple-700 dark:text-purple-300 rounded-xl font-bold transition flex items-center gap-2 text-sm"
+                >
+                  <Edit2 className="w-4 h-4" />
+                  Edit Profile
+                </button>
+              )}
               <button
                 onClick={handleLogout}
-                className="px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl font-medium transition-colors flex items-center gap-2"
+                className="px-4 py-2.5 bg-red-50 dark:bg-red-950/20 hover:bg-red-100 dark:hover:bg-red-900/35 text-red-600 dark:text-red-400 rounded-xl font-bold transition flex items-center gap-2 text-sm"
               >
                 <LogOut className="w-4 h-4" />
                 Logout
               </button>
-
             </div>
           </div>
 
-          {/* Profile Details */}
+          {/* Profile Details Grid */}
           <div className="space-y-6">
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <h2 className="text-xl font-bold text-gray-800 dark:text-white border-b pb-2 flex items-center gap-2">
+              <Award className="w-5 h-5 text-purple-500" />
+              General Details
+            </h2>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              {/* Full Name */}
+              <div className="bg-purple-50/30 dark:bg-gray-900/40 rounded-2xl p-4 border border-[#DCD2FD]/20 dark:border-gray-750">
+                <p className="text-xs text-gray-400 font-semibold uppercase tracking-wider">Full Name</p>
+                {isEditing ? (
+                  <input
+                    type="text"
+                    value={profileData.name}
+                    onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
+                    className="w-full mt-2 px-3 py-2 text-sm rounded-lg border border-purple-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-300"
+                  />
+                ) : (
+                  <p className="text-gray-800 dark:text-gray-150 font-bold mt-1.5 text-sm sm:text-base">{profileData.name || "N/A"}</p>
+                )}
+              </div>
 
               {/* Email */}
-              <div className="bg-purple-50/50 rounded-2xl p-5">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="w-10 h-10 bg-purple-200/50 rounded-lg flex items-center justify-center">
-                    <Mail className="w-5 h-5 text-purple-600" />
-                  </div>
-
-                  <div>
-                    <p className="text-xs text-gray-500 font-medium">Email</p>
-
-                    {isEditing ? (
-                      <input
-                        type="email"
-                        value={userData.email}
-                        onChange={(e) =>
-                          setUserData({ ...userData, email: e.target.value })
-                        }
-                        className="text-gray-800 font-medium bg-white px-2 py-1 rounded border border-purple-200"
-                      />
-                    ) : (
-                      <p className="text-gray-800 font-medium">{userData.email}</p>
-                    )}
-
-                  </div>
-                </div>
+              <div className="bg-purple-50/30 dark:bg-gray-900/40 rounded-2xl p-4 border border-[#DCD2FD]/20 dark:border-gray-750">
+                <p className="text-xs text-gray-400 font-semibold uppercase tracking-wider">Email Address</p>
+                <p className="text-gray-850 dark:text-gray-150 font-bold mt-2 text-sm sm:text-base">{profileData.email || "N/A"}</p>
               </div>
 
               {/* Phone */}
-              <div className="bg-purple-50/50 rounded-2xl p-5">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="w-10 h-10 bg-purple-200/50 rounded-lg flex items-center justify-center">
-                    <Phone className="w-5 h-5 text-purple-600" />
-                  </div>
-
-                  <div>
-                    <p className="text-xs text-gray-500 font-medium">Phone</p>
-
-                    {isEditing ? (
-                      <input
-                        type="tel"
-                        value={userData.phone}
-                        onChange={(e) =>
-                          setUserData({ ...userData, phone: e.target.value })
-                        }
-                        className="text-gray-800 font-medium bg-white px-2 py-1 rounded border border-purple-200"
-                      />
-                    ) : (
-                      <p className="text-gray-800 font-medium">{userData.phone}</p>
-                    )}
-
-                  </div>
-                </div>
+              <div className="bg-purple-50/30 dark:bg-gray-900/40 rounded-2xl p-4 border border-[#DCD2FD]/20 dark:border-gray-750">
+                <p className="text-xs text-gray-400 font-semibold uppercase tracking-wider">Phone</p>
+                {isEditing ? (
+                  <input
+                    type="text"
+                    value={profileData.phone}
+                    onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })}
+                    className="w-full mt-2 px-3 py-2 text-sm rounded-lg border border-purple-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-300"
+                  />
+                ) : (
+                  <p className="text-gray-800 dark:text-gray-150 font-bold mt-1.5 text-sm sm:text-base">{profileData.phone || "N/A"}</p>
+                )}
               </div>
 
-              {/* Location */}
-              <div className="bg-purple-50/50 rounded-2xl p-5">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="w-10 h-10 bg-purple-200/50 rounded-lg flex items-center justify-center">
-                    <MapPin className="w-5 h-5 text-purple-600" />
-                  </div>
-
-                  <div>
-                    <p className="text-xs text-gray-500 font-medium">Location</p>
-
-                    {isEditing ? (
-                      <input
-                        type="text"
-                        value={userData.location}
-                        onChange={(e) =>
-                          setUserData({ ...userData, location: e.target.value })
-                        }
-                        className="text-gray-800 font-medium bg-white px-2 py-1 rounded border border-purple-200"
-                      />
-                    ) : (
-                      <p className="text-gray-800 font-medium">{userData.location}</p>
-                    )}
-
-                  </div>
-                </div>
+              {/* Address / Location */}
+              <div className="bg-purple-50/30 dark:bg-gray-900/40 rounded-2xl p-4 border border-[#DCD2FD]/20 dark:border-gray-750">
+                <p className="text-xs text-gray-400 font-semibold uppercase tracking-wider">Location / City</p>
+                {isEditing ? (
+                  <input
+                    type="text"
+                    value={profileData.location}
+                    onChange={(e) => setProfileData({ ...profileData, location: e.target.value })}
+                    className="w-full mt-2 px-3 py-2 text-sm rounded-lg border border-purple-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-300"
+                  />
+                ) : (
+                  <p className="text-gray-800 dark:text-gray-150 font-bold mt-1.5 text-sm sm:text-base">{profileData.location || "N/A"}</p>
+                )}
               </div>
-
-              {/* Join Date */}
-              <div className="bg-purple-50/50 rounded-2xl p-5">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="w-10 h-10 bg-purple-200/50 rounded-lg flex items-center justify-center">
-                    <Calendar className="w-5 h-5 text-purple-600" />
-                  </div>
-
-                  <div>
-                    <p className="text-xs text-gray-500 font-medium">Member Since</p>
-                    <p className="text-gray-800 font-medium">{userData.joinDate}</p>
-                  </div>
-                </div>
-              </div>
-
             </div>
 
-            {isEditing && (
-              <div className="flex justify-end gap-3 pt-4">
-
-                <button
-                  onClick={() => setIsEditing(false)}
-                  className="px-6 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-medium transition-colors"
-                >
-                  Cancel
-                </button>
-
-                <button
-                  onClick={() => setIsEditing(false)}
-                  className="px-6 py-2 bg-gradient-to-r from-purple-400 to-pink-400 text-white rounded-xl font-semibold hover:shadow-lg transition-all"
-                >
-                  Save Changes
-                </button>
-
+            {/* Medical Metrics */}
+            <h2 className="text-xl font-bold text-gray-800 dark:text-white border-b pb-2 pt-4 flex items-center gap-2">
+              <ShieldAlert className="w-5 h-5 text-[#FFB7C5]" />
+              Medical Profile
+            </h2>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+              {/* Age */}
+              <div className="bg-purple-50/30 dark:bg-gray-900/40 rounded-2xl p-4 border border-[#DCD2FD]/20 dark:border-gray-750">
+                <p className="text-xs text-gray-400 font-semibold uppercase tracking-wider">Age</p>
+                {isEditing ? (
+                  <input
+                    type="number"
+                    value={profileData.age}
+                    onChange={(e) => setProfileData({ ...profileData, age: e.target.value })}
+                    className="w-full mt-2 px-3 py-2 text-sm rounded-lg border border-purple-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-300"
+                  />
+                ) : (
+                  <p className="text-gray-800 dark:text-gray-150 font-bold mt-1.5 text-sm sm:text-base">{profileData.age ? `${profileData.age} Years` : "N/A"}</p>
+                )}
               </div>
-            )}
+
+              {/* Gender */}
+              <div className="bg-purple-50/30 dark:bg-gray-900/40 rounded-2xl p-4 border border-[#DCD2FD]/20 dark:border-gray-750">
+                <p className="text-xs text-gray-400 font-semibold uppercase tracking-wider">Gender</p>
+                {isEditing ? (
+                  <select
+                    value={profileData.gender}
+                    onChange={(e) => setProfileData({ ...profileData, gender: e.target.value })}
+                    className="w-full mt-2 px-3 py-2 text-sm rounded-lg border border-purple-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-850 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-300"
+                  >
+                    <option value="">Select Gender</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                  </select>
+                ) : (
+                  <p className="text-gray-800 dark:text-gray-150 font-bold mt-1.5 text-sm sm:text-base">{profileData.gender || "N/A"}</p>
+                )}
+              </div>
+
+              {/* Blood Group */}
+              <div className="bg-purple-50/30 dark:bg-gray-900/40 rounded-2xl p-4 border border-[#DCD2FD]/20 dark:border-gray-750">
+                <p className="text-xs text-gray-400 font-semibold uppercase tracking-wider">Blood Group</p>
+                {isEditing ? (
+                  <input
+                    type="text"
+                    placeholder="e.g. O+"
+                    value={profileData.bloodGroup}
+                    onChange={(e) => setProfileData({ ...profileData, bloodGroup: e.target.value })}
+                    className="w-full mt-2 px-3 py-2 text-sm rounded-lg border border-purple-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-300"
+                  />
+                ) : (
+                  <p className="text-gray-800 dark:text-gray-150 font-bold mt-1.5 text-sm sm:text-base">{profileData.bloodGroup || "N/A"}</p>
+                )}
+              </div>
+            </div>
+
+            {/* Allergies & Conditions */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-4">
+              {/* Allergies */}
+              <div className="bg-purple-50/30 dark:bg-gray-900/40 rounded-2xl p-4 border border-[#DCD2FD]/20 dark:border-gray-750">
+                <p className="text-xs text-gray-400 font-semibold uppercase tracking-wider">Allergies</p>
+                {isEditing ? (
+                  <textarea
+                    value={profileData.allergies}
+                    onChange={(e) => setProfileData({ ...profileData, allergies: e.target.value })}
+                    className="w-full mt-2 px-3 py-2 text-sm rounded-lg border border-purple-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-300 resize-none"
+                    rows={2}
+                  />
+                ) : (
+                  <p className="text-gray-800 dark:text-gray-150 font-medium mt-1.5 text-sm leading-relaxed">{profileData.allergies || "None declared"}</p>
+                )}
+              </div>
+
+              {/* Medical Conditions */}
+              <div className="bg-purple-50/30 dark:bg-gray-900/40 rounded-2xl p-4 border border-[#DCD2FD]/20 dark:border-gray-750">
+                <p className="text-xs text-gray-400 font-semibold uppercase tracking-wider">Existing Medical Conditions</p>
+                {isEditing ? (
+                  <textarea
+                    value={profileData.medicalConditions}
+                    onChange={(e) => setProfileData({ ...profileData, medicalConditions: e.target.value })}
+                    className="w-full mt-2 px-3 py-2 text-sm rounded-lg border border-purple-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-300 resize-none"
+                    rows={2}
+                  />
+                ) : (
+                  <p className="text-gray-800 dark:text-gray-150 font-medium mt-1.5 text-sm leading-relaxed">{profileData.medicalConditions || "None declared"}</p>
+                )}
+              </div>
+
+              {/* Emergency Contact */}
+              <div className="bg-purple-50/30 dark:bg-gray-900/40 rounded-2xl p-4 border border-[#DCD2FD]/20 dark:border-gray-750">
+                <p className="text-xs text-gray-400 font-semibold uppercase tracking-wider">Emergency Contact</p>
+                {isEditing ? (
+                  <input
+                    type="text"
+                    value={profileData.emergencyContact}
+                    onChange={(e) => setProfileData({ ...profileData, emergencyContact: e.target.value })}
+                    className="w-full mt-2 px-3 py-2 text-sm rounded-lg border border-purple-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-300"
+                  />
+                ) : (
+                  <p className="text-gray-800 dark:text-gray-150 font-bold mt-1.5 text-sm sm:text-base">{profileData.emergencyContact || "N/A"}</p>
+                )}
+              </div>
+
+              {/* Detailed Address */}
+              <div className="bg-purple-50/30 dark:bg-gray-900/40 rounded-2xl p-4 border border-[#DCD2FD]/20 dark:border-gray-750">
+                <p className="text-xs text-gray-400 font-semibold uppercase tracking-wider">Address</p>
+                {isEditing ? (
+                  <input
+                    type="text"
+                    value={profileData.address}
+                    onChange={(e) => setProfileData({ ...profileData, address: e.target.value })}
+                    className="w-full mt-2 px-3 py-2 text-sm rounded-lg border border-purple-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-300"
+                  />
+                ) : (
+                  <p className="text-gray-800 dark:text-gray-150 font-medium mt-1.5 text-sm truncate">{profileData.address || "N/A"}</p>
+                )}
+              </div>
+            </div>
 
           </div>
 
-          {/* Stats */}
-          <div className="mt-8 pt-8 border-t border-purple-200/50">
-            <h3 className="text-lg font-bold text-gray-800 mb-4">Your Wellness Stats</h3>
+          {/* Stats Section with Real calculations */}
+          <div className="mt-8 pt-8 border-t border-purple-200/50 dark:border-gray-750">
+            <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-4">Your Wellness Stats</h3>
 
-            <div className="grid grid-cols-3 gap-4">
-
-              <div className="bg-gradient-to-br from-pink-50 to-purple-50 rounded-2xl p-5 text-center">
-                <p className="text-3xl font-bold text-purple-600 mb-1">24</p>
-                <p className="text-sm text-gray-600">Mood Entries</p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="bg-gradient-to-br from-pink-50 to-purple-50 dark:from-pink-950/20 dark:to-purple-950/20 rounded-2xl p-5 text-center border border-pink-100/50 dark:border-purple-900/35">
+                <p className="text-3xl font-black text-purple-600 dark:text-purple-400 mb-1">{stats.moodEntries}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Mood Entries</p>
               </div>
 
-              <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl p-5 text-center">
-                <p className="text-3xl font-bold text-blue-600 mb-1">12</p>
-                <p className="text-sm text-gray-600">Days Streak</p>
+              <div className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20 rounded-2xl p-5 text-center border border-blue-100/50 dark:border-purple-900/35">
+                <p className="text-3xl font-black text-blue-600 dark:text-blue-400 mb-1">{stats.streak}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Days Streak</p>
               </div>
 
-              <div className="bg-gradient-to-br from-green-50 to-purple-50 rounded-2xl p-5 text-center">
-                <p className="text-3xl font-bold text-green-600 mb-1">85%</p>
-                <p className="text-sm text-gray-600">Wellness Score</p>
+              <div className="bg-gradient-to-br from-green-50 to-purple-50 dark:from-green-955/20 dark:to-purple-955/20 rounded-2xl p-5 text-center border border-green-100/50 dark:border-purple-900/35">
+                <p className="text-3xl font-black text-green-600 dark:text-green-400 mb-1">{stats.wellnessScore}%</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Wellness Score</p>
               </div>
-
             </div>
           </div>
 
