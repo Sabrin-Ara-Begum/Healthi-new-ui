@@ -1,5 +1,17 @@
 import { API_BASE } from "./config";
 
+export const reverseGeocode = async (lat: number, lng: number) => {
+  const res = await fetch(`${API_BASE}/api/doctors/reverse-geocode`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ lat, lng }),
+  });
+  if (!res.ok) throw new Error("Failed to reverse geocode");
+  return res.json();
+};
+
 export const findDoctors = async (specialty: string, location: string) => {
   const res = await fetch(`${API_BASE}/api/doctors/find`, {
     method: "POST",

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Search, MapPin, UserCircle2, ArrowLeft, Heart } from "lucide-react";
 import { useNavigate } from "react-router";
 import Header from "@/react-app/components/Header";
-import { findDoctors, getBookmarks, bookmarkDoctor, removeBookmark } from "@/react-app/api/doctorsApi";
+import { findDoctors, getBookmarks, bookmarkDoctor, removeBookmark, reverseGeocode } from "@/react-app/api/doctorsApi";
 import { useApp } from "@/react-app/lib/AppContext";
 
 interface FindDoctorProps {
@@ -47,7 +47,8 @@ export default function FindDoctor({ onNotificationClick }: FindDoctorProps) {
   const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(null);
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [loading, setLoading] = useState(false);
-  const [userLocation, setUserLocation] = useState("Sivasagar");
+  const [userLocation, setUserLocation] = useState("");
+  const [locationPermissionDenied, setLocationPermissionDenied] = useState(false);
   
   const [bookmarks, setBookmarks] = useState<any[]>([]);
 
@@ -62,27 +63,25 @@ export default function FindDoctor({ onNotificationClick }: FindDoctorProps) {
   }, [userLocation]);
 
   useEffect(() => {
-    if (!navigator.geolocation) return;
+    if (!navigator.geolocation) {
+      return;
+    }
+    
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         const { latitude, longitude } = position.coords;
         try {
-          const response = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
-          );
-          const data = await response.json();
-          const city =
-            data.address.city ||
-            data.address.town ||
-            data.address.village ||
-            "Sivasagar";
+          const data = await reverseGeocode(latitude, longitude);
+          const city = data.city && data.city !== "Unknown Location" ? data.city : "Sivasagar";
           setUserLocation(city);
+          setLocationPermissionDenied(false);
         } catch {
           setUserLocation("Sivasagar");
         }
       },
       () => {
-        setUserLocation("Sivasagar");
+        setLocationPermissionDenied(true);
+        setUserLocation(""); 
       }
     );
   }, []);
@@ -199,9 +198,24 @@ export default function FindDoctor({ onNotificationClick }: FindDoctorProps) {
           <p className="text-gray-500 dark:text-gray-400 mt-2 text-lg">
             Search specialists, hospitals and clinics recommended for your health.
           </p>
-          <p className="text-sm text-purple-600 dark:text-purple-400 mt-2 flex items-center gap-1">
-            <MapPin className="w-4 h-4" /> Searching doctors near <strong>{userLocation}</strong>
-          </p>
+          
+          {locationPermissionDenied && (
+            <div className="mt-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-xl">
+              <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                Location access denied. Please enter your city manually in the location field below.
+              </p>
+            </div>
+          )}
+          
+          <div className="flex items-center gap-2 mt-4">
+             <MapPin className="w-4 h-4 text-purple-500" />
+             <input 
+               value={userLocation}
+               onChange={(e) => setUserLocation(e.target.value)}
+               placeholder="Enter city..."
+               className="bg-transparent border-none focus:ring-0 p-0 text-sm font-bold text-gray-700 dark:text-gray-300 placeholder:text-gray-400"
+             />
+          </div>
         </div>
 
         {/* Search */}
