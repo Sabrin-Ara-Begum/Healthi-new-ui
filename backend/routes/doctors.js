@@ -8,6 +8,46 @@ dotenv.config();
 
 const router = express.Router();
 
+/**
+ * POST /api/doctors/reverse-geocode
+ * Perform reverse geocoding using Google Maps API
+ */
+router.post("/reverse-geocode", async (req, res) => {
+  try {
+    const { lat, lng } = req.body;
+    if (!lat || !lng) {
+      return res.status(400).json({ message: "Latitude and longitude required" });
+    }
+
+    const response = await fetch(
+      `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${process.env.GOOGLE_MAPS_API_KEY}`
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return res.status(response.status).json(data);
+    }
+
+    if (data.results && data.results.length > 0) {
+      // Find the first component that is a locality or sublocality
+      let city = "Unknown Location";
+      for (const component of data.results[0].address_components) {
+        if (component.types.includes("locality") || component.types.includes("sublocality") || component.types.includes("administrative_area_level_2")) {
+          city = component.long_name;
+          break;
+        }
+      }
+      return res.json({ city, fullAddress: data.results[0].formatted_address });
+    }
+
+    res.json({ city: "Unknown Location" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Failed to reverse geocode", error: err.message });
+  }
+});
+
 router.post("/find", async (req, res) => {
   try {
     const { specialty, location } = req.body;
