@@ -1,4 +1,4 @@
-import { Home, MessageSquare, FileText, Stethoscope, Settings, User, X, Moon, Sun, HelpCircle, Mail, ChevronDown, ChevronUp } from 'lucide-react';
+import { Home, MessageSquare, FileText, Stethoscope, Settings, User, X, Moon, Sun, HelpCircle, Mail, ChevronDown, ChevronUp, LogOut } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router';
 import { useState } from 'react';
 import { useApp } from '@/react-app/lib/AppContext';
@@ -370,14 +370,25 @@ export default function Sidebar() {
               )}
             </div>
 
-            {/* Logout at bottom */}
-            {userEmail && (
+            {/* Login / Logout at bottom */}
+            {userEmail ? (
               <button
                 onClick={handleLogout}
                 className="w-full mt-6 border-2 border-red-200 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-xl py-3 text-xs sm:text-sm font-bold transition flex items-center justify-center gap-2"
               >
                 <X className="w-4 h-4" />
                 Sign Out Account
+              </button>
+            ) : (
+              <button
+                onClick={() => {
+                  setSettingsOpen(false);
+                  navigate('/auth');
+                }}
+                className="w-full mt-6 border-2 border-purple-200 text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30 rounded-xl py-3 text-xs sm:text-sm font-bold transition flex items-center justify-center gap-2"
+              >
+                <LogOut className="w-4 h-4" />
+                Log In / Sign Up
               </button>
             )}
           </div>

@@ -6,7 +6,7 @@ import { API_BASE } from '../api/config';
 
 export default function Profile() {
   const navigate = useNavigate();
-  const { user, setUser, showToast } = useApp();
+  const { user, setUser, showToast, requireAuth } = useApp();
 
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -172,6 +172,42 @@ export default function Profile() {
   const avatarUrlResolved = profileData.avatar
     ? (profileData.avatar.startsWith("http") ? profileData.avatar : `${API_BASE}${profileData.avatar}`)
     : "";
+
+  if (!user) {
+    return (
+      <div className="flex-1 flex flex-col overflow-hidden bg-gray-50/50 dark:bg-gray-900/50">
+        {/* Header Section */}
+        <div className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm border-b border-purple-100 dark:border-gray-800 p-4 sm:px-8 sm:py-6 flex justify-between items-center z-10 sticky top-0 shadow-sm">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => navigate(-1)}
+              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors flex items-center justify-center text-gray-600 dark:text-gray-300"
+              aria-label="Go Back"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-white">Profile</h1>
+          </div>
+        </div>
+
+        <div className="flex-1 flex flex-col items-center justify-center p-8 text-center h-full max-w-md mx-auto">
+          <div className="w-24 h-24 bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-full flex items-center justify-center mb-6">
+            <User className="w-12 h-12" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-4">Your Profile</h2>
+          <p className="text-gray-600 dark:text-gray-300 mb-8 leading-relaxed">
+            Create an account to manage your personal health details, track preferences, view wellness statistics, and securely store your data.
+          </p>
+          <button 
+            onClick={() => requireAuth(() => {})} 
+            className="w-full sm:w-auto px-8 py-3 bg-gradient-to-r from-[#B9A9FB] to-[#FFB7C5] hover:opacity-90 text-white font-semibold rounded-xl shadow-md transition-all"
+          >
+            Log In or Sign Up
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex-1 overflow-auto bg-gradient-to-br from-purple-50 via-white to-blue-50 dark:from-gray-955 dark:via-gray-900 dark:to-purple-950/20 text-gray-800 dark:text-gray-100 transition-colors duration-300">

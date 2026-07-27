@@ -13,7 +13,7 @@ import FindDoctor from "./pages/FindDoctor";
 import TabletIdentifier from "./pages/TabletIdentifier";
 import AIChat from "./pages/AIChat";
 import { AppProvider } from "@/react-app/lib/AppContext";
-import ProtectedRoute from "@/react-app/components/ProtectedRoute";
+
 
 export default function App() {
   const [notificationOpen, setNotificationOpen] = useState(false);
@@ -27,49 +27,45 @@ export default function App() {
           <Sidebar />
         <div className="flex-1 flex flex-col overflow-hidden">
           <Routes>
-            {/* Public route */}
+            {/* Unprotected Routes - All visitors can view */}
             <Route path="/auth" element={<Auth />} />
-
-            {/* Protected Routes */}
-            <Route element={<ProtectedRoute />}>
-              <Route
-                path="/"
-                element={<HomePage onNotificationClick={() => setNotificationOpen(true)} />}
-              />
-              <Route
-                path="/chat"
-                element={<AIChat onNotificationClick={() => setNotificationOpen(true)} />}
-              />
-              <Route
-                path="/reports"
-                element={<ComingSoon title="Reports" onNotificationClick={() => setNotificationOpen(true)} />}
-              />
-              <Route
-                path="/doctors"
-                element={<FindDoctor onNotificationClick={() => setNotificationOpen(true)} />}
-              />
-              <Route
-                path="/symptom-checker"
-                element={<SymptomChecker onNotificationClick={() => setNotificationOpen(true)} />}
-              />
-              <Route
-                path="/find-doctor"
-                element={<FindDoctor onNotificationClick={() => setNotificationOpen(true)} />}
-              />
-              <Route
-                path="/mood-tracker"
-                element={<MoodTracker onNotificationClick={() => setNotificationOpen(true)} />}
-              />
-              <Route path="/profile" element={<Profile />} />
-              <Route
-                path="/tablet-identifier"
-                element={
-                  <TabletIdentifier
-                    onNotificationClick={() => setNotificationOpen(true)}
-                  />
-                }
-              />
-            </Route>
+            <Route
+              path="/"
+              element={<HomePage onNotificationClick={() => setNotificationOpen(true)} />}
+            />
+            <Route
+              path="/chat"
+              element={<AIChat onNotificationClick={() => setNotificationOpen(true)} />}
+            />
+            <Route
+              path="/reports"
+              element={<ComingSoon title="Reports" onNotificationClick={() => setNotificationOpen(true)} />}
+            />
+            <Route
+              path="/doctors"
+              element={<FindDoctor onNotificationClick={() => setNotificationOpen(true)} />}
+            />
+            <Route
+              path="/symptom-checker"
+              element={<SymptomChecker onNotificationClick={() => setNotificationOpen(true)} />}
+            />
+            <Route
+              path="/find-doctor"
+              element={<FindDoctor onNotificationClick={() => setNotificationOpen(true)} />}
+            />
+            <Route
+              path="/mood-tracker"
+              element={<MoodTracker onNotificationClick={() => setNotificationOpen(true)} />}
+            />
+            <Route path="/profile" element={<Profile />} />
+            <Route
+              path="/tablet-identifier"
+              element={
+                <TabletIdentifier
+                  onNotificationClick={() => setNotificationOpen(true)}
+                />
+              }
+            />
           </Routes>
           <Footer />
         </div>

@@ -19,7 +19,7 @@ interface SearchSuggestion {
 
 export default function Header({ onNotificationClick }: HeaderProps) {
   const navigate = useNavigate();
-  const { toggleSidebar, user, unreadCount } = useApp();
+  const { toggleSidebar, user, unreadCount, requireAuth } = useApp();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([]);
@@ -217,7 +217,7 @@ export default function Header({ onNotificationClick }: HeaderProps) {
         {/* Right Section (Notifications, Profile) */}
         <div className="flex items-center gap-4 flex-shrink-0">
           <button 
-            onClick={onNotificationClick}
+            onClick={() => requireAuth(onNotificationClick)}
             className="relative p-2 hover:bg-[#F3E8FF]/50 dark:hover:bg-gray-800 rounded-lg transition-colors"
             aria-label="View Notifications"
           >

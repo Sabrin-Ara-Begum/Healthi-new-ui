@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
 import { CheckCircle2, AlertCircle, X } from "lucide-react";
 import { API_BASE } from "../api/config";
+import LoginPromptModal from "../components/LoginPromptModal";
 
 interface UserType {
   id?: string;
@@ -45,6 +46,7 @@ interface AppContextType {
   clearAllNotifications: () => Promise<void>;
   unreadCount: number;
   showToast: (message: string, type?: "success" | "error") => void;
+  requireAuth: (action: () => void) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -61,27 +63,45 @@ export function AppProvider({ children }: { children: ReactNode }) {
     type: "success",
     visible: false
   });
+  
+  // Login Modal state
+  const [loginModalVisible, setLoginModalVisible] = useState(false);
 
-  // Load initial user and theme preference
+  // Load initial user and validate session
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      try {
-        const parsed = JSON.parse(storedUser);
-        setUserState(parsed);
-      } catch (e) {
-        console.error("Failed to parse user details:", e);
+    const initAuth = async () => {
+      const token = localStorage.getItem("token");
+      if (token) {
+        try {
+          const res = await fetch(`${API_BASE}/api/auth/validate`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          
+          if (res.ok) {
+            const userData = await res.json();
+            setUserState(userData);
+          } else {
+            // Token is invalid or expired
+            localStorage.removeItem("token");
+            localStorage.removeItem("user");
+            setUserState(null);
+          }
+        } catch (e) {
+          console.error("Token validation failed:", e);
+        }
       }
-    }
-
-    const storedTheme = localStorage.getItem("theme") as "light" | "dark";
-    if (storedTheme) {
-      setThemeState(storedTheme);
-      applyThemeClass(storedTheme);
-    } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
-      setThemeState("dark");
-      applyThemeClass("dark");
-    }
+      
+      const storedTheme = localStorage.getItem("theme") as "light" | "dark";
+      if (storedTheme) {
+        setThemeState(storedTheme);
+        applyThemeClass(storedTheme);
+      } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+        setThemeState("dark");
+        applyThemeClass("dark");
+      }
+    };
+    
+    initAuth();
   }, []);
 
   // Update theme class on HTML element
@@ -195,6 +215,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }, 3500);
   }, []);
 
+  const requireAuth = useCallback((action: () => void) => {
+    if (user?.email) {
+      action();
+    } else {
+      setLoginModalVisible(true);
+    }
+  }, [user?.email]);
+
   return (
     <AppContext.Provider
       value={{
@@ -211,10 +239,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
         markNotificationRead,
         clearAllNotifications,
         unreadCount,
-        showToast
+        showToast,
+        requireAuth
       }}
     >
       {children}
+      <LoginPromptModal 
+        isOpen={loginModalVisible} 
+        onClose={() => {
+          setLoginModalVisible(false);
+        }} 
+      />
       {/* Toast Overlay */}
       {toast.visible && (
         <div className="fixed bottom-6 right-6 z-[100] animate-in slide-in-from-bottom-5 fade-in duration-300">

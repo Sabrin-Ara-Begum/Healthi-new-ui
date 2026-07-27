@@ -40,7 +40,7 @@ const stickyColors = [
 
 export default function MoodTracker({ onNotificationClick }: MoodTrackerProps) {
   const navigate = useNavigate();
-  const { user, fetchNotifications } = useApp();
+  const { user, fetchNotifications, requireAuth, showToast } = useApp();
 
   const [selectedMood, setSelectedMood] = useState<number | null>(null);
   const [moodNote, setMoodNote] = useState("");
@@ -97,35 +97,44 @@ export default function MoodTracker({ onNotificationClick }: MoodTrackerProps) {
   };
 
   const handleMoodClick = (index: number) => {
-    setSelectedMood(index);
+    requireAuth(() => {
+      setSelectedMood(index);
+    });
   };
 
   const handleSaveNote = async () => {
-    if (selectedMood === null || !user?.email) return;
-    
-    setLoading(true);
-    const now = new Date();
-    
-    try {
-      await logMood({
-        email: user.email,
-        mood: moodEmojis[selectedMood].emoji,
-        label: moodEmojis[selectedMood].label,
-        note: moodNote.trim(),
-        date: now.toISOString().split("T")[0],
-        time: now.toTimeString().split(" ")[0]
-      });
+    requireAuth(async () => {
+      if (selectedMood === null) {
+        showToast("Please select a mood first", "error");
+        return;
+      }
+      if (!user?.email) return;
       
-      setMoodNote("");
-      setSelectedMood(null);
-      await loadData();
-      fetchNotifications();
-    } catch (err) {
-      console.error(err);
-      alert("Failed to save mood");
-    } finally {
-      setLoading(false);
-    }
+      setLoading(true);
+      const now = new Date();
+      
+      try {
+        await logMood({
+          email: user.email,
+          mood: moodEmojis[selectedMood].emoji,
+          label: moodEmojis[selectedMood].label,
+          note: moodNote.trim(),
+          date: now.toISOString().split("T")[0],
+          time: now.toTimeString().split(" ")[0]
+        });
+        
+        showToast("Mood log saved successfully!", "success");
+        setMoodNote("");
+        setSelectedMood(null);
+        await loadData();
+        fetchNotifications();
+      } catch (err) {
+        console.error(err);
+        showToast("Failed to save mood", "error");
+      } finally {
+        setLoading(false);
+      }
+    });
   };
 
   return (

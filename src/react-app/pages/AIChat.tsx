@@ -16,7 +16,7 @@ interface AIChatProps {
 
 export default function AIChat({}: AIChatProps) {
   const navigate = useNavigate();
-  const { user, fetchNotifications } = useApp();
+  const { user, fetchNotifications, requireAuth } = useApp();
 
   const [sessions, setSessions] = useState<any[]>([]);
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
@@ -179,32 +179,34 @@ export default function AIChat({}: AIChatProps) {
   };
 
   const handleSendMessage = async () => {
-    if (!inputText.trim() || !activeSessionId) return;
+    requireAuth(async () => {
+      if (!inputText.trim() || !activeSessionId) return;
 
-    const userMessage = { role: "user", text: inputText, createdAt: new Date() };
-    setMessages((prev) => [...prev, userMessage]);
-    setInputText("");
-    setSending(true);
+      const userMessage = { role: "user", text: inputText, createdAt: new Date() };
+      setMessages((prev) => [...prev, userMessage]);
+      setInputText("");
+      setSending(true);
 
-    try {
-      const data = await sendChatMessage(activeSessionId, userMessage.text);
-      setMessages((prev) => [...prev, { role: "bot", text: data.reply, createdAt: new Date() }]);
-      fetchNotifications();
-      // Reload sessions to update title if it was the first message
-      loadSessions();
-      speakText(data.reply);
-    } catch (err) {
-      console.error(err);
-      alert("Failed to send message. Please try again.");
-      // Rollback optimistic update
-      setMessages((prev) => prev.filter(m => m !== userMessage));
-    } finally {
-      setSending(false);
-      // Auto-focus input after bot replies
-      setTimeout(() => {
-        inputRef.current?.focus();
-      }, 50);
-    }
+      try {
+        const data = await sendChatMessage(activeSessionId, userMessage.text);
+        setMessages((prev) => [...prev, { role: "bot", text: data.reply, createdAt: new Date() }]);
+        fetchNotifications();
+        // Reload sessions to update title if it was the first message
+        loadSessions();
+        speakText(data.reply);
+      } catch (err) {
+        console.error(err);
+        alert("Failed to send message. Please try again.");
+        // Rollback optimistic update
+        setMessages((prev) => prev.filter(m => m !== userMessage));
+      } finally {
+        setSending(false);
+        // Auto-focus input after bot replies
+        setTimeout(() => {
+          inputRef.current?.focus();
+        }, 50);
+      }
+    });
   };
 
   return (
